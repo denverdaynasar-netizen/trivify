@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: trivify-wedding
+    name: trivify
     env: node
     plan: free
     buildCommand: npm install
