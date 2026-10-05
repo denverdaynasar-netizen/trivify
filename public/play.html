@@ -316,6 +316,10 @@
       });
     });
 
+    // Apply saved theme
+    const savedTheme = localStorage.getItem('trivify_theme') || 'theme-sky-blue';
+    if (savedTheme) document.body.classList.add(savedTheme);
+
     // Initial connect
     connect();
   </script>

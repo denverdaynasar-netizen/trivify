@@ -17,6 +17,70 @@
   --c-green: #26890c;
 }
 
+/* THEME PRESETS */
+body.theme-sky-blue {
+  --bg-dark: #0284c7;
+  --bg-card: #0369a1;
+  --bg-glass: rgba(2, 132, 199, 0.9);
+  --border-glass: rgba(255, 255, 255, 0.2);
+  --gold: #fef08a;
+  --gold-light: #ffffff;
+  --text-main: #ffffff;
+  --text-muted: #e0f2fe;
+  background-color: #0284c7;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.35) 0%, transparent 50%),
+    radial-gradient(circle at 85% 85%, rgba(14, 116, 144, 0.45) 0%, transparent 50%),
+    linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+}
+
+body.theme-royal-purple {
+  --bg-dark: #46178f;
+  --bg-card: #2e0854;
+  --bg-glass: rgba(70, 23, 143, 0.9);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --gold: #ffd700;
+  --gold-light: #fff;
+  --text-main: #ffffff;
+  --text-muted: #e9d5ff;
+  background-color: #46178f;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(168, 85, 247, 0.3) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(88, 28, 135, 0.5) 0%, transparent 45%),
+    linear-gradient(135deg, #46178f 0%, #2e0854 100%) !important;
+}
+
+body.theme-champagne {
+  --bg-dark: #24201c;
+  --bg-card: #332d26;
+  --bg-glass: rgba(36, 32, 28, 0.9);
+  --border-glass: rgba(212, 175, 55, 0.25);
+  --gold: #e5c158;
+  --gold-light: #fff5d1;
+  --text-main: #fcfbf9;
+  --text-muted: #d4cfc5;
+  background-color: #24201c;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(229, 193, 88, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(180, 135, 30, 0.12) 0%, transparent 50%),
+    linear-gradient(135deg, #24201c 0%, #171512 100%) !important;
+}
+
+body.theme-dark {
+  --bg-dark: #0f1016;
+  --bg-card: #181926;
+  --bg-glass: rgba(24, 25, 38, 0.85);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --gold: #d4af37;
+  --gold-light: #f6e7b2;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  background-color: #0f1016;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(19, 104, 206, 0.05) 0%, transparent 40%) !important;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -32,6 +96,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
   background-image: 
     radial-gradient(circle at 15% 15%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
     radial-gradient(circle at 85% 85%, rgba(19, 104, 206, 0.05) 0%, transparent 40%);

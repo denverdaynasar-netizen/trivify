@@ -26,6 +26,13 @@
       </div>
     </div>
     <div style="display:flex; align-items:center; gap:0.75rem;">
+      <!-- Theme Selector Dropdown -->
+      <select id="themeSelector" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-main); padding:0.4rem 0.8rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; outline:none;" title="Select Presentation Background Theme">
+        <option value="theme-sky-blue" selected>🎨 Sky Blue</option>
+        <option value="theme-royal-purple">🎨 Royal Purple</option>
+        <option value="theme-champagne">🎨 Champagne Gold</option>
+        <option value="theme-dark">🎨 Midnight Dark</option>
+      </select>
       <button id="btnSoundToggle" style="background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold-light); padding:0.4rem 0.9rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">🔊 Music: ON</button>
       <button id="btnHeaderReset" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-muted); padding:0.4rem 0.8rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">🔄 Reset to Lobby</button>
       <div class="pin-badge">
@@ -48,17 +55,28 @@
       <img id="welcomeLogo" src="/assets/logo.jpg" alt="Logo" class="brand-logo" style="width:105px; height:105px; margin:0 auto 1.2rem; display:block;">
       <div style="font-size:0.8rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold); font-weight:900;">TRIVIFY LIVE</div>
       <h2 style="font-family:var(--font-serif); font-size:2.1rem; color:var(--gold-light); margin:0.4rem 0 0.5rem;">Host Access</h2>
-      <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:2rem;">Enter Host Security PIN to launch the live big-screen presentation</p>
+      <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:1.8rem;">Enter Host Security PIN to launch the live big-screen presentation</p>
 
       <form id="hostUnlockForm" onsubmit="event.preventDefault(); unlockHost();">
         <div style="margin-bottom:1.5rem;">
-          <input type="text" id="inputHostPin" class="input-field" value="123" placeholder="Enter Host PIN" style="letter-spacing:0.25em; font-size:1.8rem; font-weight:900; text-align:center;" maxlength="10" required>
+          <input type="password" id="inputHostPin" class="input-field" value="" placeholder="Enter PIN (123)" style="letter-spacing:0.2em; font-size:1.8rem; font-weight:900; text-align:center;" maxlength="10" autocomplete="off" autofocus required>
         </div>
         <button type="submit" class="btn-primary" style="width:100%; padding:1.15rem; font-size:1.15rem; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
           🔓 Launch Presentation Screen ➔
         </button>
       </form>
-      <p id="hostPinError" style="color:#ef4444; font-weight:700; margin-top:1.2rem; display:none;">✕ Incorrect Host PIN. Please try again.</p>
+      <p id="hostPinError" style="color:#ef4444; font-weight:700; margin-top:1.2rem; display:none;">✕ Incorrect Host PIN. Default is 123.</p>
+
+      <!-- Quick Theme Switcher Pills on Welcome Screen -->
+      <div style="margin-top:2rem; padding-top:1.2rem; border-top:1px solid var(--border-glass); display:flex; flex-direction:column; align-items:center; gap:0.6rem;">
+        <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-muted); font-weight:700;">Choose Screen Theme:</span>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:center;">
+          <button type="button" onclick="setTheme('theme-sky-blue')" style="background:#0284c7; color:#fff; border:1px solid #38bdf8; padding:0.35rem 0.75rem; border-radius:999px; font-size:0.75rem; cursor:pointer; font-weight:700;">Sky Blue</button>
+          <button type="button" onclick="setTheme('theme-royal-purple')" style="background:#46178f; color:#fff; border:1px solid #a855f7; padding:0.35rem 0.75rem; border-radius:999px; font-size:0.75rem; cursor:pointer; font-weight:700;">Royal Purple</button>
+          <button type="button" onclick="setTheme('theme-champagne')" style="background:#24201c; color:#e5c158; border:1px solid #d4af37; padding:0.35rem 0.75rem; border-radius:999px; font-size:0.75rem; cursor:pointer; font-weight:700;">Champagne</button>
+          <button type="button" onclick="setTheme('theme-dark')" style="background:#0f1016; color:#94a3b8; border:1px solid #334155; padding:0.35rem 0.75rem; border-radius:999px; font-size:0.75rem; cursor:pointer; font-weight:700;">Midnight Dark</button>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -496,6 +514,25 @@
         }
       }
     }, { once: true });
+
+    // Theme Switcher & Persistence
+    function setTheme(themeName) {
+      document.body.classList.remove('theme-sky-blue', 'theme-royal-purple', 'theme-champagne', 'theme-dark');
+      if (themeName) {
+        document.body.classList.add(themeName);
+        localStorage.setItem('trivify_theme', themeName);
+        const sel = document.getElementById('themeSelector');
+        if (sel) sel.value = themeName;
+      }
+    }
+
+    const savedTheme = localStorage.getItem('trivify_theme') || 'theme-sky-blue';
+    setTheme(savedTheme);
+
+    const themeSel = document.getElementById('themeSelector');
+    if (themeSel) {
+      themeSel.addEventListener('change', (e) => setTheme(e.target.value));
+    }
 
     // Init
     loadBranding();
