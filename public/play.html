@@ -39,6 +39,16 @@
     </div>
   </main>
 
+  <!-- SCREEN: EVENT LOCKED -->
+  <main id="lockedScreen" class="screen hidden" style="justify-content:center; text-align:center;">
+    <div class="player-login-box">
+      <div style="font-size:3.5rem; margin-bottom:1rem;">🔒</div>
+      <h2 style="font-family:var(--font-serif); color:var(--gold-light); margin-bottom:0.5rem;">Event Starting Soon</h2>
+      <p id="lockedMessage" style="color:var(--text-muted); margin-bottom:1.5rem; font-size:1rem; line-height:1.5;">This trivia game is currently closed by the organizer. Please check back during scheduled event hours!</p>
+      <button onclick="location.reload()" class="btn-primary" style="font-size:0.95rem; padding:0.7rem 1.5rem;">Check Again 🔄</button>
+    </div>
+  </main>
+
   <!-- SCREEN 2: WAITING LOBBY -->
   <main id="waitingScreen" class="screen hidden" style="justify-content:center; text-align:center;">
     <div class="player-login-box">
@@ -122,7 +132,7 @@
 
     // Screen Management
     function showScreen(id) {
-      ['joinScreen', 'waitingScreen', 'questionPlayerScreen', 'resultScreen', 'endScreen'].forEach(s => {
+      ['joinScreen', 'lockedScreen', 'waitingScreen', 'questionPlayerScreen', 'resultScreen', 'endScreen'].forEach(s => {
         document.getElementById(s).classList.add('hidden');
       });
       document.getElementById(id).classList.remove('hidden');
@@ -163,7 +173,12 @@
           return; // heartbeat alive
         }
 
-        if (data.type === 'JOIN_SUCCESS') {
+        if (data.type === 'GAME_LOCKED') {
+          showScreen('lockedScreen');
+          if (data.message) document.getElementById('lockedMessage').textContent = data.message;
+        }
+
+        else if (data.type === 'JOIN_SUCCESS') {
           myPlayerId = data.playerId;
           myNickname = data.nickname;
           const pin = document.getElementById('inputPin').value.trim() || 'WEDDING';

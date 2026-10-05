@@ -4,5 +4,6 @@
   "logoUrl": "/assets/logo.jpg",
   "theme": "wedding-gold",
   "primaryColor": "#d4af37",
-  "accentColor": "#f3e5ab"
+  "accentColor": "#f3e5ab",
+  "isGameActive": true
 }

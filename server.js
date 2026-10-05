@@ -438,6 +438,15 @@ wss.on('connection', (ws) => {
 
       // --- PLAYER ACTIONS ---
       else if (data.type === 'PLAYER_JOIN') {
+        const cfg = loadConfig();
+        if (cfg.isGameActive === false) {
+          ws.send(JSON.stringify({
+            type: 'GAME_LOCKED',
+            message: "This event is currently closed. Please check back during scheduled event hours!"
+          }));
+          return;
+        }
+
         const pin = (data.pin || "WEDDING").toUpperCase().trim();
         const room = getOrCreateRoom(pin);
         boundPin = pin;

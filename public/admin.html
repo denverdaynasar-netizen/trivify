@@ -21,6 +21,9 @@
       </div>
     </div>
     <div style="display:flex; gap:12px; align-items:center;">
+      <button id="btnGameStatusToggle" style="background:#22c55e; border:none; color:#000; font-weight:800; font-size:0.9rem; padding:0.6rem 1.2rem; border-radius:999px; cursor:pointer;" title="Click to turn game ON or OFF">
+        🟢 GAME IS LIVE (ON)
+      </button>
       <button id="btnGlobalSave" class="btn-primary" style="font-size:0.95rem; padding:0.6rem 1.4rem;">💾 Save & Publish</button>
       <a href="/host" target="_blank" style="color:var(--gold-light); text-decoration:none; font-size:0.9rem; font-weight:700;">Open Host Screen 🖥️</a>
     </div>
@@ -165,16 +168,49 @@
   <script>
     let questions = [];
     let activeIndex = 0;
+    let currentConfig = { isGameActive: true };
+
+    function updateStatusToggleUI(isActive) {
+      const btn = document.getElementById('btnGameStatusToggle');
+      if (isActive) {
+        btn.textContent = '🟢 GAME IS LIVE (ON)';
+        btn.style.background = '#22c55e';
+        btn.style.color = '#000';
+      } else {
+        btn.textContent = '🔴 GAME IS LOCKED (OFF)';
+        btn.style.background = '#ef4444';
+        btn.style.color = '#fff';
+      }
+    }
+
+    // Toggle click listener
+    document.getElementById('btnGameStatusToggle').addEventListener('click', async () => {
+      const newState = (currentConfig.isGameActive === false) ? true : false;
+      currentConfig.isGameActive = newState;
+      updateStatusToggleUI(newState);
+
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentConfig)
+        });
+      } catch (err) {
+        console.error('Error toggling game status:', err);
+      }
+    });
 
     // Load initial data
     async function loadData() {
       try {
         const cfgRes = await fetch('/api/config');
-        const cfg = await cfgRes.json();
-        document.getElementById('cfgEventName').value = cfg.eventName || '';
-        document.getElementById('cfgSubtitle').value = cfg.subtitle || '';
-        document.getElementById('cfgLogoUrl').value = cfg.logoUrl || '';
-        if (cfg.logoUrl) document.getElementById('adminLogo').src = cfg.logoUrl;
+        currentConfig = await cfgRes.json();
+        updateStatusToggleUI(currentConfig.isGameActive !== false);
+
+        document.getElementById('cfgEventName').value = currentConfig.eventName || '';
+        document.getElementById('cfgSubtitle').value = currentConfig.subtitle || '';
+        document.getElementById('cfgLogoUrl').value = currentConfig.logoUrl || '';
+        if (currentConfig.logoUrl) document.getElementById('adminLogo').src = currentConfig.logoUrl;
 
         const qRes = await fetch('/api/questions');
         questions = await qRes.json();
@@ -358,7 +394,8 @@
         subtitle: document.getElementById('cfgSubtitle').value,
         logoUrl: document.getElementById('cfgLogoUrl').value,
         primaryColor: "#d4af37",
-        accentColor: "#f3e5ab"
+        accentColor: "#f3e5ab",
+        isGameActive: currentConfig.isGameActive !== false
       };
 
       try {
