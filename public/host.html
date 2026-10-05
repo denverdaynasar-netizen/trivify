@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B & S Wedding Trivia - Host Screen</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <!-- Web Audio Synthesizer -->
+  <script src="/sound-effects.js"></script>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="header-bar">
+    <div class="brand-wrapper">
+      <img id="hostLogo" src="/assets/logo.jpg" alt="Event Logo" class="brand-logo">
+      <div>
+        <div style="font-size:0.75rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); font-weight:800;">TRIVIFY LIVE</div>
+        <h1 id="hostTitle" class="brand-title" style="margin-top:-2px;">B & S Wedding Trivia</h1>
+        <p id="hostSub" class="brand-sub">How well do you know the newlyweds?</p>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <button id="btnSoundToggle" style="background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold-light); padding:0.4rem 0.9rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">🔊 Music: ON</button>
+      <button id="btnHeaderReset" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-muted); padding:0.4rem 0.8rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">🔄 Reset to Lobby</button>
+      <div class="pin-badge">
+        <span>ROOM PIN:</span>
+        <span id="pinDisplay" style="color:#ffd700; font-size:1.3rem;">WEDDING</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- SCREEN 1: LOBBY -->
+  <main id="lobbyScreen" class="screen">
+    <div class="lobby-grid">
+      <!-- QR and Join Info -->
+      <div class="join-card">
+        <span class="join-pin-title">Scan or Join Online</span>
+        <div class="qr-frame">
+          <img id="qrImg" src="" alt="Scan QR Code to Join">
+        </div>
+        <div class="join-url" id="joinUrlText">Loading join link...</div>
+        <div style="font-size:0.9rem; color:var(--text-muted);">Enter PIN: <strong id="lobbyPinBig" style="color:var(--gold); font-size:1.2rem;">WEDDING</strong></div>
+      </div>
+
+      <!-- Live Player Stage -->
+      <div class="players-stage">
+        <div class="stage-top">
+          <div class="player-count-pill">
+            👥 <span id="playerCount">0</span> Players Ready
+          </div>
+          <button id="btnStartGame" class="btn-primary" disabled>Start Game</button>
+        </div>
+
+        <div id="playerList" class="player-tags-container">
+          <!-- Dynamically populated player pills -->
+          <div style="color:var(--text-muted); font-size:1.1rem; margin:auto;" id="waitingHint">
+            Waiting for players to join...
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- SCREEN 2: QUESTION -->
+  <main id="questionScreen" class="screen hidden">
+    <div class="question-top-bar">
+      <div class="q-counter" id="qCounter">Question 1 of 10</div>
+      <div class="timer-circle" id="timerBox">20</div>
+      <div class="q-counter" id="answerCounter">0 answered</div>
+    </div>
+
+    <div class="question-box" id="qText">
+      Where did the couple first meet?
+    </div>
+
+    <div class="answers-grid" id="answersGrid">
+      <div class="answer-card opt-0" id="card0">
+        <span class="card-shape">▲</span>
+        <span class="card-text" id="ansText0">Option 1</span>
+        <span class="vote-tally hidden" id="tally0">0</span>
+      </div>
+      <div class="answer-card opt-1" id="card1">
+        <span class="card-shape">◆</span>
+        <span class="card-text" id="ansText1">Option 2</span>
+        <span class="vote-tally hidden" id="tally1">0</span>
+      </div>
+      <div class="answer-card opt-2" id="card2">
+        <span class="card-shape">●</span>
+        <span class="card-text" id="ansText2">Option 3</span>
+        <span class="vote-tally hidden" id="tally2">0</span>
+      </div>
+      <div class="answer-card opt-3" id="card3">
+        <span class="card-shape">■</span>
+        <span class="card-text" id="ansText3">Option 4</span>
+        <span class="vote-tally hidden" id="tally3">0</span>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem; text-align:right;">
+      <button id="btnNext" class="btn-primary hidden">Next ➔</button>
+    </div>
+  </main>
+
+  <!-- SCREEN 3: LEADERBOARD -->
+  <main id="leaderboardScreen" class="screen hidden">
+    <div style="text-align:center; margin-bottom: 2rem;">
+      <h2 style="font-family:var(--font-serif); font-size:2.4rem; color:var(--gold-light);">🏆 Live Leaderboard</h2>
+      <p style="color:var(--text-muted);">Current top contenders</p>
+    </div>
+
+    <div class="leaderboard-card">
+      <div id="leaderboardList">
+        <!-- Dynamic list -->
+      </div>
+      <div style="margin-top:2rem; text-align:center;">
+        <button id="btnLeaderboardNext" class="btn-primary">Next Question ➔</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- SCREEN 4: PODIUM (FINAL WINNERS) -->
+  <main id="podiumScreen" class="screen hidden">
+    <div style="text-align:center; margin-bottom: 1.5rem;">
+      <h2 style="font-family:var(--font-serif); font-size:2.8rem; color:var(--gold-light); margin-bottom:0.5rem;">✨ Champions Podium ✨</h2>
+      <p style="color:var(--text-muted); font-size:1.2rem;">Congratulations to our trivia masters!</p>
+    </div>
+
+    <div class="podium-container" id="podiumContainer">
+      <!-- 2nd Place -->
+      <div class="podium-pillar">
+        <div class="podium-name" id="podiumName2">--</div>
+        <div style="color:var(--text-muted); margin-bottom:8px;" id="podiumScore2">-- pts</div>
+        <div class="podium-block rank-2">2nd</div>
+      </div>
+      <!-- 1st Place -->
+      <div class="podium-pillar">
+        <div class="podium-name" style="font-size:1.6rem; color:#ffd700;" id="podiumName1">👑 --</div>
+        <div style="color:var(--gold-light); margin-bottom:8px; font-weight:bold;" id="podiumScore1">-- pts</div>
+        <div class="podium-block rank-1">1st</div>
+      </div>
+      <!-- 3rd Place -->
+      <div class="podium-pillar">
+        <div class="podium-name" id="podiumName3">--</div>
+        <div style="color:var(--text-muted); margin-bottom:8px;" id="podiumScore3">-- pts</div>
+        <div class="podium-block rank-3">3rd</div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:2rem;">
+      <button id="btnRestart" class="btn-primary">Play Again</button>
+    </div>
+  </main>
+
+  <script>
+    const ROOM_PIN = "WEDDING";
+    let ws;
+    let currentConfig = {};
+    let isLastQuestion = false;
+
+    // Load initial branding
+    async function loadBranding() {
+      try {
+        const res = await fetch('/api/config');
+        currentConfig = await res.json();
+        document.getElementById('hostTitle').textContent = currentConfig.eventName || 'B & S Wedding Trivia';
+        document.getElementById('hostSub').textContent = currentConfig.subtitle || '';
+        if (currentConfig.logoUrl) {
+          document.getElementById('hostLogo').src = currentConfig.logoUrl;
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    // Load QR Code using real network address
+    async function setupJoinLink() {
+      try {
+        const netRes = await fetch('/api/network-info');
+        const netInfo = await netRes.json();
+        
+        const targetUrl = `${netInfo.publicUrl}?pin=${ROOM_PIN}`;
+        document.getElementById('joinUrlText').textContent = netInfo.publicUrl.replace('https://', '').replace('http://', '');
+        
+        const res = await fetch(`/api/qrcode?text=${encodeURIComponent(targetUrl)}`);
+        const data = await res.json();
+        if (data.dataUrl) {
+          document.getElementById('qrImg').src = data.dataUrl;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Screen Switcher
+    function showScreen(screenId) {
+      ['lobbyScreen', 'questionScreen', 'leaderboardScreen', 'podiumScreen'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    // Connect WebSocket
+    function connectWS() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${window.location.host}`);
+
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ type: 'HOST_INIT', pin: ROOM_PIN }));
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'HOST_CONNECTED' || data.type === 'ROOM_UPDATE') {
+          updatePlayerList(data.players);
+        }
+
+        else if (data.type === 'PLAYER_JOINED' || data.type === 'PLAYER_LEFT') {
+          updatePlayerList(data.players);
+        }
+
+        else if (data.type === 'QUESTION_START_HOST') {
+          renderQuestion(data);
+          if (window.triviaAudio) triviaAudio.playQuestionMusic(data.timeLeft);
+        }
+
+        else if (data.type === 'TIMER_TICK') {
+          document.getElementById('timerBox').textContent = data.timeLeft;
+          if (data.timeLeft <= 5) {
+            document.getElementById('timerBox').style.borderColor = '#e21b3c';
+            document.getElementById('timerBox').style.color = '#ff6b81';
+            if (data.timeLeft > 0 && window.triviaAudio) triviaAudio.playUrgentTick();
+          }
+        }
+
+        else if (data.type === 'ANSWER_UPDATE') {
+          document.getElementById('answerCounter').textContent = `${data.answeredCount} / ${data.totalPlayers} answered`;
+        }
+
+        else if (data.type === 'REVEAL_HOST') {
+          renderReveal(data);
+          if (window.triviaAudio) triviaAudio.playRevealJingle();
+        }
+
+        else if (data.type === 'LEADERBOARD') {
+          renderLeaderboard(data);
+          if (window.triviaAudio) triviaAudio.playLeaderboardSting();
+        }
+
+        else if (data.type === 'PODIUM') {
+          renderPodium(data);
+          if (window.triviaAudio) triviaAudio.playPodiumFanfare();
+        }
+
+        else if (data.type === 'ROOM_RESET') {
+          updatePlayerList(data.players);
+          showScreen('lobbyScreen');
+          if (window.triviaAudio) triviaAudio.playLobbyMusic();
+        }
+      };
+
+      ws.onclose = () => {
+        setTimeout(connectWS, 1500);
+      };
+    }
+
+    // Keepalive Ping every 10 seconds
+    setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'PING' }));
+      }
+    }, 10000);
+
+    function updatePlayerList(players) {
+      const countEl = document.getElementById('playerCount');
+      const listEl = document.getElementById('playerList');
+      const btnStart = document.getElementById('btnStartGame');
+      
+      countEl.textContent = players.length;
+      btnStart.disabled = players.length === 0;
+
+      if (players.length === 0) {
+        listEl.innerHTML = `<div style="color:var(--text-muted); font-size:1.1rem; margin:auto;">Waiting for players to join...</div>`;
+        return;
+      }
+
+      listEl.innerHTML = players.map(p => `
+        <div class="player-pill" onclick="kickPlayer('${p.id}', '${escapeHtml(p.nickname)}')" style="cursor:pointer;" title="Click to remove">
+          <span>✨</span>
+          <span>${escapeHtml(p.nickname)}</span>
+          <span style="font-size:0.8rem; opacity:0.6; margin-left:6px;">✕</span>
+        </div>
+      `).join('');
+    }
+
+    function kickPlayer(playerId, nickname) {
+      if (confirm(`Remove "${nickname}" from the lobby?`)) {
+        ws.send(JSON.stringify({ type: 'HOST_KICK_PLAYER', pin: ROOM_PIN, playerId }));
+      }
+    }
+
+    function renderQuestion(data) {
+      showScreen('questionScreen');
+      const q = data.question;
+      document.getElementById('qCounter').textContent = `Question ${data.index} of ${data.total}`;
+      document.getElementById('timerBox').textContent = data.timeLeft;
+      document.getElementById('timerBox').style.borderColor = 'var(--gold)';
+      document.getElementById('timerBox').style.color = 'var(--gold-light)';
+      document.getElementById('answerCounter').textContent = `0 / ${data.totalPlayers} answered`;
+      document.getElementById('qText').textContent = q.question;
+
+      for (let i = 0; i < 4; i++) {
+        const card = document.getElementById(`card${i}`);
+        const text = document.getElementById(`ansText${i}`);
+        const tally = document.getElementById(`tally${i}`);
+        
+        card.classList.remove('dimmed', 'correct-answer');
+        tally.classList.add('hidden');
+        text.textContent = q.options[i] || '';
+      }
+
+      document.getElementById('btnNext').classList.add('hidden');
+    }
+
+    function renderReveal(data) {
+      for (let i = 0; i < 4; i++) {
+        const card = document.getElementById(`card${i}`);
+        const tally = document.getElementById(`tally${i}`);
+        
+        tally.textContent = data.distribution[i];
+        tally.classList.remove('hidden');
+
+        if (i === data.correctIndex) {
+          card.classList.add('correct-answer');
+        } else {
+          card.classList.add('dimmed');
+        }
+      }
+
+      const btnNext = document.getElementById('btnNext');
+      btnNext.classList.remove('hidden');
+      btnNext.textContent = 'View Leaderboard ➔';
+    }
+
+    function renderLeaderboard(data) {
+      showScreen('leaderboardScreen');
+      isLastQuestion = data.isLastQuestion;
+      const listEl = document.getElementById('leaderboardList');
+
+      listEl.innerHTML = data.topPlayers.map((p, idx) => `
+        <div class="leader-item ${idx === 0 ? 'gold-rank' : ''}">
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <span style="font-size:1.4rem; font-weight:900; width:30px;">#${p.rank}</span>
+            <span>${escapeHtml(p.nickname)}</span>
+          </div>
+          <div style="color:var(--gold-light); font-weight:800;">
+            ${p.score.toLocaleString()} pts
+          </div>
+        </div>
+      `).join('');
+
+      const btnNext = document.getElementById('btnLeaderboardNext');
+      btnNext.textContent = isLastQuestion ? 'Reveal Final Winners! 👑' : 'Next Question ➔';
+    }
+
+    function renderPodium(data) {
+      showScreen('podiumScreen');
+      const p = data.podium;
+
+      if (p[0]) {
+        document.getElementById('podiumName1').textContent = `👑 ${p[0].nickname}`;
+        document.getElementById('podiumScore1').textContent = `${p[0].score.toLocaleString()} pts`;
+      }
+      if (p[1]) {
+        document.getElementById('podiumName2').textContent = p[1].nickname;
+        document.getElementById('podiumScore2').textContent = `${p[1].score.toLocaleString()} pts`;
+      }
+      if (p[2]) {
+        document.getElementById('podiumName3').textContent = p[2].nickname;
+        document.getElementById('podiumScore3').textContent = `${p[2].score.toLocaleString()} pts`;
+      }
+
+      // Fire festive celebratory confetti!
+      confetti({
+        particleCount: 150,
+        spread: 90,
+        origin: { y: 0.6 }
+      });
+      setTimeout(() => {
+        confetti({ particleCount: 100, angle: 60, spread: 55, origin: { x: 0 } });
+        confetti({ particleCount: 100, angle: 120, spread: 55, origin: { x: 1 } });
+      }, 500);
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.innerText = str || '';
+      return div.innerHTML;
+    }
+
+    // Host Controls
+    document.getElementById('btnStartGame').addEventListener('click', () => {
+      ws.send(JSON.stringify({ type: 'HOST_START_GAME', pin: ROOM_PIN }));
+    });
+
+    document.getElementById('btnNext').addEventListener('click', () => {
+      ws.send(JSON.stringify({ type: 'HOST_NEXT_QUESTION', pin: ROOM_PIN }));
+    });
+
+    document.getElementById('btnLeaderboardNext').addEventListener('click', () => {
+      ws.send(JSON.stringify({ type: 'HOST_NEXT_QUESTION', pin: ROOM_PIN }));
+    });
+
+    document.getElementById('btnRestart').addEventListener('click', () => {
+      ws.send(JSON.stringify({ type: 'HOST_RESET', pin: ROOM_PIN }));
+    });
+
+    document.getElementById('btnHeaderReset').addEventListener('click', () => {
+      if (confirm('Reset game and return all players to the lobby?')) {
+        ws.send(JSON.stringify({ type: 'HOST_RESET', pin: ROOM_PIN }));
+      }
+    });
+
+    // Sound Toggle & Browser Audio Unlock
+    document.getElementById('btnSoundToggle').addEventListener('click', () => {
+      if (!window.triviaAudio) return;
+      const isMuted = triviaAudio.toggleMute();
+      document.getElementById('btnSoundToggle').textContent = isMuted ? '🔇 Sound: MUTED' : '🔊 Music: ON';
+      document.getElementById('btnSoundToggle').style.borderColor = isMuted ? '#94a3b8' : 'var(--gold)';
+      document.getElementById('btnSoundToggle').style.color = isMuted ? '#94a3b8' : 'var(--gold-light)';
+      if (!isMuted && !document.getElementById('lobbyScreen').classList.contains('hidden')) {
+        triviaAudio.playLobbyMusic();
+      }
+    });
+
+    // Unlock Web Audio on first click anywhere
+    document.addEventListener('click', () => {
+      if (window.triviaAudio && !triviaAudio.isMuted) {
+        triviaAudio.init();
+        if (!document.getElementById('lobbyScreen').classList.contains('hidden') && !triviaAudio.currentInterval) {
+          triviaAudio.playLobbyMusic();
+        }
+      }
+    }, { once: true });
+
+    // Init
+    loadBranding();
+    setupJoinLink();
+    connectWS();
+  </script>
+</body>
+</html>

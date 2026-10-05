@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahoot-Style Quiz Studio & Admin</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="header-bar">
+    <div class="brand-wrapper">
+      <img id="adminLogo" src="/assets/logo.jpg" alt="Logo" class="brand-logo">
+      <div>
+        <h1 class="brand-title">Trivify Studio</h1>
+        <p class="brand-sub">Visual Question Editor & Event Customizer</p>
+      </div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button id="btnGlobalSave" class="btn-primary" style="font-size:0.95rem; padding:0.6rem 1.4rem;">💾 Save & Publish</button>
+      <a href="/host" target="_blank" style="color:var(--gold-light); text-decoration:none; font-size:0.9rem; font-weight:700;">Open Host Screen 🖥️</a>
+    </div>
+  </header>
+
+  <main class="screen" style="max-width:1300px; padding-top:1rem;">
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" id="tabStudioBtn">🎨 Question Studio (Visual)</button>
+      <button class="tab-btn" id="tabBrandBtn">👑 Event Branding</button>
+      <button class="tab-btn" id="tabJsonBtn">⚡ Bulk JSON Import</button>
+    </nav>
+
+    <!-- TAB 1: VISUAL KAHOOT STUDIO -->
+    <div id="tabStudioView" class="studio-layout">
+      <!-- Left Sidebar: Slides List -->
+      <aside class="studio-sidebar">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h3 style="font-size:1.1rem; color:var(--gold-light);">Questions</h3>
+          <span id="slideTotalBadge" style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">18 slides</span>
+        </div>
+
+        <div class="slides-scroll-list" id="slidesList">
+          <!-- Dynamic Slide Cards -->
+        </div>
+
+        <button id="btnAddQuestion" class="btn-primary" style="font-size:1rem; padding:0.8rem; width:100%; border-radius:12px;">
+          ➕ Add Question
+        </button>
+      </aside>
+
+      <!-- Center Main Stage: Active Slide Canvas -->
+      <section class="studio-main-stage">
+        <!-- Top Controls: Timer & Delete -->
+        <div class="studio-top-controls">
+          <div style="display:flex; align-items:center; gap:0.8rem;">
+            <span style="font-weight:800; font-size:1.2rem; color:var(--gold-light);" id="currentQHeading">Question #1</span>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:1.2rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:0.9rem; color:var(--text-muted); font-weight:600;">⏱️ Time limit:</span>
+              <select id="selTimeLimit" style="background:#0f1016; color:#fff; border:1px solid var(--border-glass); padding:0.4rem 0.8rem; border-radius:8px; font-weight:700; cursor:pointer;">
+                <option value="10">10 seconds</option>
+                <option value="15">15 seconds</option>
+                <option value="20" selected>20 seconds</option>
+                <option value="30">30 seconds</option>
+                <option value="60">60 seconds</option>
+              </select>
+            </div>
+            <button id="btnDeleteCurrentQ" style="background:transparent; border:1px solid rgba(239, 68, 68, 0.4); color:#ef4444; padding:0.4rem 0.8rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">🗑️ Delete Slide</button>
+          </div>
+        </div>
+
+        <!-- Big Question Text Field -->
+        <div>
+          <input type="text" id="inputQuestionText" class="question-big-input" placeholder="Start typing your question here..." maxlength="120">
+          <div style="text-align:right; font-size:0.8rem; color:var(--text-muted); margin-top:0.4rem;">
+            <span id="charCount">0</span>/120 characters
+          </div>
+        </div>
+
+        <!-- 4 Colored Answer Option Boxes -->
+        <div class="editor-answers-grid">
+          <!-- Option 0: Red Triangle -->
+          <div class="editor-ans-card opt-0">
+            <span class="ans-shape-badge" style="color:var(--c-red);">▲</span>
+            <input type="text" id="optInput0" class="ans-text-input" placeholder="Answer option 1" maxlength="75">
+            <button class="ans-correct-toggle" id="correctBtn0" title="Click to mark as correct answer" onclick="setCorrectIndex(0)">✓</button>
+          </div>
+
+          <!-- Option 1: Blue Diamond -->
+          <div class="editor-ans-card opt-1">
+            <span class="ans-shape-badge" style="color:var(--c-blue);">◆</span>
+            <input type="text" id="optInput1" class="ans-text-input" placeholder="Answer option 2" maxlength="75">
+            <button class="ans-correct-toggle" id="correctBtn1" title="Click to mark as correct answer" onclick="setCorrectIndex(1)">✓</button>
+          </div>
+
+          <!-- Option 2: Yellow Circle -->
+          <div class="editor-ans-card opt-2">
+            <span class="ans-shape-badge" style="color:var(--c-yellow);">●</span>
+            <input type="text" id="optInput2" class="ans-text-input" placeholder="Answer option 3" maxlength="75">
+            <button class="ans-correct-toggle" id="correctBtn2" title="Click to mark as correct answer" onclick="setCorrectIndex(2)">✓</button>
+          </div>
+
+          <!-- Option 3: Green Square -->
+          <div class="editor-ans-card opt-3">
+            <span class="ans-shape-badge" style="color:var(--c-green);">■</span>
+            <input type="text" id="optInput3" class="ans-text-input" placeholder="Answer option 4" maxlength="75">
+            <button class="ans-correct-toggle" id="correctBtn3" title="Click to mark as correct answer" onclick="setCorrectIndex(3)">✓</button>
+          </div>
+        </div>
+
+        <!-- Host Talking Points / Explanation -->
+        <div>
+          <label style="font-size:0.9rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.4rem;">💡 Host Explanation / Fun Fact (Optional talking point):</label>
+          <input type="text" id="inputExplanation" class="input-field" style="text-align:left; font-size:1rem; padding:0.8rem;" placeholder="e.g. Their very first date was at Jollibee!">
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 2: BRANDING -->
+    <div id="tabBrandView" class="hidden" style="max-width:800px; margin:2rem auto;">
+      <div class="admin-container" style="margin-top:0;">
+        <h2 style="font-family:var(--font-serif); color:var(--gold-light); margin-bottom:1.5rem; font-size:1.6rem;">🎨 Event Branding</h2>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem;">
+          <div class="form-group">
+            <label>Event Name / Title</label>
+            <input type="text" id="cfgEventName" class="input-field" style="text-align:left;">
+          </div>
+          <div class="form-group">
+            <label>Subtitle / Slogan</label>
+            <input type="text" id="cfgSubtitle" class="input-field" style="text-align:left;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Logo Path or Image URL</label>
+          <input type="text" id="cfgLogoUrl" class="input-field" style="text-align:left;" placeholder="/assets/logo.jpg">
+        </div>
+
+        <button id="btnSaveConfig" class="btn-primary" style="font-size:1rem; padding:0.7rem 1.8rem;">Save Branding</button>
+        <span id="cfgStatus" style="margin-left:1rem; color:#4ade80; font-weight:600;"></span>
+      </div>
+    </div>
+
+    <!-- TAB 3: BULK JSON -->
+    <div id="tabJsonView" class="hidden" style="max-width:900px; margin:2rem auto;">
+      <div class="admin-container" style="margin-top:0;">
+        <h2 style="font-family:var(--font-serif); color:var(--gold-light); margin-bottom:1rem; font-size:1.6rem;">⚡ Bulk Questionnaire JSON</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Paste a raw JSON array of questions to replace all slides at once.</p>
+        <textarea id="questionsJson" class="json-textarea"></textarea>
+        <div style="margin-top:1rem; display:flex; justify-content:space-between;">
+          <button id="btnSaveRawJson" class="btn-primary" style="font-size:1rem; padding:0.7rem 1.8rem;">Import JSON</button>
+          <button id="btnFormatJson" style="background:transparent; border:1px solid var(--border-glass); color:var(--text-muted); padding:0.6rem 1rem; border-radius:8px; cursor:pointer;">Beautify JSON</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let questions = [];
+    let activeIndex = 0;
+
+    // Load initial data
+    async function loadData() {
+      try {
+        const cfgRes = await fetch('/api/config');
+        const cfg = await cfgRes.json();
+        document.getElementById('cfgEventName').value = cfg.eventName || '';
+        document.getElementById('cfgSubtitle').value = cfg.subtitle || '';
+        document.getElementById('cfgLogoUrl').value = cfg.logoUrl || '';
+        if (cfg.logoUrl) document.getElementById('adminLogo').src = cfg.logoUrl;
+
+        const qRes = await fetch('/api/questions');
+        questions = await qRes.json();
+        renderSlidesList();
+        loadSlideIntoEditor(0);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Render left sidebar slide cards
+    function renderSlidesList() {
+      const container = document.getElementById('slidesList');
+      document.getElementById('slideTotalBadge').textContent = `${questions.length} slides`;
+
+      container.innerHTML = questions.map((q, idx) => `
+        <div class="slide-item ${idx === activeIndex ? 'active' : ''}" onclick="selectSlide(${idx})">
+          <span class="slide-num">#${idx + 1}</span>
+          <span class="slide-title-snippet">${escapeHtml(q.question || 'Untitled Question')}</span>
+          <button class="slide-del-btn" onclick="event.stopPropagation(); deleteSlide(${idx});" title="Delete">✕</button>
+        </div>
+      `).join('');
+    }
+
+    // Load selected slide into visual stage
+    function loadSlideIntoEditor(index) {
+      if (index < 0 || index >= questions.length) return;
+      activeIndex = index;
+      const q = questions[index];
+
+      document.getElementById('currentQHeading').textContent = `Question #${index + 1}`;
+      document.getElementById('inputQuestionText').value = q.question || '';
+      document.getElementById('charCount').textContent = (q.question || '').length;
+      document.getElementById('selTimeLimit').value = q.timeLimit || 20;
+      document.getElementById('inputExplanation').value = q.explanation || '';
+
+      for (let i = 0; i < 4; i++) {
+        document.getElementById(`optInput${i}`).value = (q.options && q.options[i]) ? q.options[i] : '';
+        const btn = document.getElementById(`correctBtn${i}`);
+        if (i === q.correctIndex) {
+          btn.classList.add('is-correct');
+        } else {
+          btn.classList.remove('is-correct');
+        }
+      }
+
+      renderSlidesList();
+    }
+
+    function selectSlide(index) {
+      syncCurrentEditorToMemory();
+      loadSlideIntoEditor(index);
+    }
+
+    // Sync input fields to current active question object
+    function syncCurrentEditorToMemory() {
+      if (activeIndex < 0 || activeIndex >= questions.length) return;
+      const q = questions[activeIndex];
+      q.question = document.getElementById('inputQuestionText').value.trim();
+      q.timeLimit = parseInt(document.getElementById('selTimeLimit').value, 10) || 20;
+      q.explanation = document.getElementById('inputExplanation').value.trim();
+      q.options = [
+        document.getElementById('optInput0').value.trim(),
+        document.getElementById('optInput1').value.trim(),
+        document.getElementById('optInput2').value.trim(),
+        document.getElementById('optInput3').value.trim()
+      ];
+    }
+
+    // Set correct answer
+    function setCorrectIndex(optIndex) {
+      syncCurrentEditorToMemory();
+      questions[activeIndex].correctIndex = optIndex;
+      for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById(`correctBtn${i}`);
+        if (i === optIndex) btn.classList.add('is-correct');
+        else btn.classList.remove('is-correct');
+      }
+    }
+
+    // Add new slide
+    document.getElementById('btnAddQuestion').addEventListener('click', () => {
+      syncCurrentEditorToMemory();
+      const newQ = {
+        id: Date.now(),
+        question: "New Trivia Question",
+        timeLimit: 20,
+        options: ["Option 1", "Option 2", "Option 3", "Option 4"],
+        correctIndex: 0,
+        explanation: ""
+      };
+      questions.push(newQ);
+      selectSlide(questions.length - 1);
+    });
+
+    // Delete current slide
+    function deleteSlide(index) {
+      if (questions.length <= 1) {
+        alert("You must have at least 1 question in the quiz.");
+        return;
+      }
+      if (confirm(`Delete Question #${index + 1}?`)) {
+        questions.splice(index, 1);
+        if (activeIndex >= questions.length) activeIndex = questions.length - 1;
+        loadSlideIntoEditor(activeIndex);
+      }
+    }
+
+    document.getElementById('btnDeleteCurrentQ').addEventListener('click', () => {
+      deleteSlide(activeIndex);
+    });
+
+    // Character counter
+    document.getElementById('inputQuestionText').addEventListener('input', (e) => {
+      document.getElementById('charCount').textContent = e.target.value.length;
+      syncCurrentEditorToMemory();
+      // Update snippet in sidebar
+      const activeEl = document.querySelector(`.slide-item.active .slide-title-snippet`);
+      if (activeEl) activeEl.textContent = e.target.value || 'Untitled Question';
+    });
+
+    // Option inputs change sync
+    for (let i = 0; i < 4; i++) {
+      document.getElementById(`optInput${i}`).addEventListener('input', syncCurrentEditorToMemory);
+    }
+    document.getElementById('selTimeLimit').addEventListener('change', syncCurrentEditorToMemory);
+    document.getElementById('inputExplanation').addEventListener('input', syncCurrentEditorToMemory);
+
+    // Save All Questions
+    async function saveAllQuestions() {
+      syncCurrentEditorToMemory();
+      try {
+        const res = await fetch('/api/questions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(questions)
+        });
+        if (res.ok) {
+          const btn = document.getElementById('btnGlobalSave');
+          btn.textContent = '✓ Saved & Published!';
+          btn.style.background = '#22c55e';
+          setTimeout(() => {
+            btn.textContent = '💾 Save & Publish';
+            btn.style.background = '';
+          }, 2500);
+        }
+      } catch (e) {
+        alert('Error saving questions: ' + e.message);
+      }
+    }
+
+    document.getElementById('btnGlobalSave').addEventListener('click', saveAllQuestions);
+
+    // Tab Switcher
+    const tabs = [
+      { btn: 'tabStudioBtn', view: 'tabStudioView' },
+      { btn: 'tabBrandBtn', view: 'tabBrandView' },
+      { btn: 'tabJsonBtn', view: 'tabJsonView' }
+    ];
+
+    tabs.forEach(t => {
+      document.getElementById(t.btn).addEventListener('click', () => {
+        tabs.forEach(o => {
+          document.getElementById(o.btn).classList.remove('active');
+          document.getElementById(o.view).classList.add('hidden');
+        });
+        document.getElementById(t.btn).classList.add('active');
+        document.getElementById(t.view).classList.remove('hidden');
+
+        if (t.view === 'tabJsonView') {
+          syncCurrentEditorToMemory();
+          document.getElementById('questionsJson').value = JSON.stringify(questions, null, 2);
+        }
+      });
+    });
+
+    // Save Branding
+    document.getElementById('btnSaveConfig').addEventListener('click', async () => {
+      const body = {
+        eventName: document.getElementById('cfgEventName').value,
+        subtitle: document.getElementById('cfgSubtitle').value,
+        logoUrl: document.getElementById('cfgLogoUrl').value,
+        primaryColor: "#d4af37",
+        accentColor: "#f3e5ab"
+      };
+
+      try {
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (res.ok) {
+          document.getElementById('cfgStatus').textContent = '✓ Branding Saved!';
+          setTimeout(() => { document.getElementById('cfgStatus').textContent = ''; }, 3000);
+        }
+      } catch (e) { alert('Error saving config'); }
+    });
+
+    // Bulk JSON Import
+    document.getElementById('btnSaveRawJson').addEventListener('click', async () => {
+      try {
+        const parsed = JSON.parse(document.getElementById('questionsJson').value);
+        if (!Array.isArray(parsed)) throw new Error('Must be an array of questions');
+        questions = parsed;
+        await saveAllQuestions();
+        loadSlideIntoEditor(0);
+        alert(`Successfully imported ${questions.length} questions!`);
+      } catch (err) {
+        alert('Invalid JSON: ' + err.message);
+      }
+    });
+
+    document.getElementById('btnFormatJson').addEventListener('click', () => {
+      try {
+        const val = JSON.parse(document.getElementById('questionsJson').value);
+        document.getElementById('questionsJson').value = JSON.stringify(val, null, 2);
+      } catch (e) { alert('JSON contains syntax errors'); }
+    });
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.innerText = str || '';
+      return div.innerHTML;
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

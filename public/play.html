@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>B & S Wedding Trivia - Player</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body class="mobile-player-body">
+
+  <!-- Player Header -->
+  <header class="header-bar" style="padding:0.75rem 1.2rem;">
+    <div class="brand-wrapper">
+      <img id="playLogo" src="/assets/logo.jpg" alt="Logo" class="brand-logo" style="width:38px; height:38px;">
+      <div>
+        <div style="font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); font-weight:800;">TRIVIFY</div>
+        <div id="playBrandTitle" class="brand-title" style="font-size:1.05rem; margin-top:-2px;">B & S Wedding</div>
+      </div>
+    </div>
+    <div id="playerBadge" class="pin-badge hidden" style="font-size:0.85rem; padding:0.3rem 0.8rem;">
+      <span id="playerNicknameDisplay">Guest</span>
+    </div>
+  </header>
+
+  <!-- SCREEN 1: LOGIN -->
+  <main id="joinScreen" class="screen" style="justify-content:center;">
+    <div class="player-login-box">
+      <h2 style="font-family:var(--font-serif); color:var(--gold-light); margin-bottom:0.4rem; font-size:1.6rem;">Join the Trivia</h2>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Compete to win the newlyweds' prize!</p>
+
+      <form id="joinForm">
+        <input type="text" id="inputPin" class="input-field" placeholder="GAME PIN" required uppercase>
+        <input type="text" id="inputNickname" class="input-field" placeholder="Enter Your Nickname" maxlength="20" required>
+        <button type="submit" class="btn-primary" style="width:100%; padding:1rem;">Enter Game</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- SCREEN 2: WAITING LOBBY -->
+  <main id="waitingScreen" class="screen hidden" style="justify-content:center; text-align:center;">
+    <div class="player-login-box">
+      <div style="font-size:3.5rem; margin-bottom:1rem;">🥂</div>
+      <h2 style="font-family:var(--font-serif); color:var(--gold-light); margin-bottom:0.5rem;">You're In!</h2>
+      <p style="color:var(--text-muted); margin-bottom:1.5rem;">Look up at the screen to see your name.</p>
+      <div class="pin-badge" style="display:inline-flex; margin:auto;">
+        Waiting for host to start...
+      </div>
+    </div>
+  </main>
+
+  <!-- SCREEN 3: ACTIVE QUESTION / BUZZER BUTTONS -->
+  <main id="questionPlayerScreen" class="screen hidden" style="padding:0.5rem; max-width:600px;">
+    <div style="text-align:center; padding:0.4rem 0;">
+      <span id="playerQCounter" style="font-weight:700; color:var(--text-muted); font-size:0.9rem;">Question 1</span>
+    </div>
+
+    <!-- Tappable 4-Color Grid -->
+    <div class="player-buttons-grid" id="buttonsGrid">
+      <button class="player-tap-btn btn-0" data-index="0">
+        <span class="tap-shape">▲</span>
+        <span class="tap-label" id="btnLabel0"></span>
+      </button>
+      <button class="player-tap-btn btn-1" data-index="1">
+        <span class="tap-shape">◆</span>
+        <span class="tap-label" id="btnLabel1"></span>
+      </button>
+      <button class="player-tap-btn btn-2" data-index="2">
+        <span class="tap-shape">●</span>
+        <span class="tap-label" id="btnLabel2"></span>
+      </button>
+      <button class="player-tap-btn btn-3" data-index="3">
+        <span class="tap-shape">■</span>
+        <span class="tap-label" id="btnLabel3"></span>
+      </button>
+    </div>
+
+    <!-- Answer Submitted State (hidden initially) -->
+    <div id="submittedState" class="hidden" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem;">
+      <div style="font-size:3.5rem; margin-bottom:1rem;">🔒</div>
+      <h3 style="font-size:1.8rem; margin-bottom:0.5rem;">Answer Locked!</h3>
+      <p style="color:var(--text-muted);">Waiting for timer to expire...</p>
+    </div>
+  </main>
+
+  <!-- SCREEN 4: ROUND RESULT -->
+  <main id="resultScreen" class="screen hidden" style="padding:0;">
+    <div id="resultBanner" class="result-banner">
+      <div id="resultIcon" style="font-size:4.5rem; margin-bottom:1rem;">🎉</div>
+      <div id="resultStatus" class="result-title">Correct!</div>
+      <div id="resultPoints" class="result-points">+940 pts</div>
+      <div id="resultRank" style="font-size:1.2rem; color:rgba(255,255,255,0.85); font-weight:700;">Rank #2 (1,840 pts)</div>
+    </div>
+  </main>
+
+  <!-- SCREEN 5: FINAL PODIUM -->
+  <main id="endScreen" class="screen hidden" style="justify-content:center; text-align:center;">
+    <div class="player-login-box">
+      <div style="font-size:4rem; margin-bottom:1rem;">👑</div>
+      <h2 style="font-family:var(--font-serif); color:var(--gold-light); margin-bottom:0.5rem;">Game Finished!</h2>
+      <p style="color:var(--text-muted); margin-bottom:1.5rem;">Check the big screen for the champions podium!</p>
+      <div id="myFinalScore" class="pin-badge" style="display:inline-flex; margin:auto;">
+        Score: 0 pts
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let ws;
+    let myPlayerId = null;
+    let myNickname = '';
+    let hasAnswered = false;
+
+    // Extract PIN from URL query param if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const pinParam = urlParams.get('pin');
+    if (pinParam) {
+      document.getElementById('inputPin').value = pinParam.toUpperCase();
+    }
+
+    // Screen Management
+    function showScreen(id) {
+      ['joinScreen', 'waitingScreen', 'questionPlayerScreen', 'resultScreen', 'endScreen'].forEach(s => {
+        document.getElementById(s).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    // Load saved session if exists
+    let savedSession = null;
+    try {
+      savedSession = JSON.parse(sessionStorage.getItem('trivia_player'));
+    } catch(e) {}
+
+    if (savedSession && savedSession.nickname) {
+      document.getElementById('inputNickname').value = savedSession.nickname;
+      if (savedSession.pin) document.getElementById('inputPin').value = savedSession.pin;
+    }
+
+    // Connect WebSocket with auto-reconnect & session recovery
+    function connect() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${window.location.host}`);
+
+      ws.onopen = () => {
+        // If we have an active saved session, automatically rejoin
+        if (savedSession && savedSession.nickname && savedSession.pin) {
+          ws.send(JSON.stringify({
+            type: 'PLAYER_JOIN',
+            pin: savedSession.pin,
+            nickname: savedSession.nickname,
+            playerId: savedSession.playerId
+          }));
+        }
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'PONG') {
+          return; // heartbeat alive
+        }
+
+        if (data.type === 'JOIN_SUCCESS') {
+          myPlayerId = data.playerId;
+          myNickname = data.nickname;
+          const pin = document.getElementById('inputPin').value.trim() || 'WEDDING';
+
+          // Save session
+          savedSession = { playerId: myPlayerId, nickname: myNickname, pin };
+          sessionStorage.setItem('trivia_player', JSON.stringify(savedSession));
+
+          document.getElementById('playerNicknameDisplay').textContent = myNickname;
+          document.getElementById('playerBadge').classList.remove('hidden');
+
+          if (data.config && data.config.logoUrl) {
+            document.getElementById('playLogo').src = data.config.logoUrl;
+            document.getElementById('playBrandTitle').textContent = data.config.eventName || 'B & S Wedding';
+          }
+
+          if (data.roomState === 'LOBBY') {
+            showScreen('waitingScreen');
+          }
+        }
+
+        else if (data.type === 'QUESTION_START_PLAYER') {
+          showScreen('questionPlayerScreen');
+          document.getElementById('playerQCounter').textContent = `Question ${data.index} of ${data.total}`;
+          
+          if (data.alreadyAnswered) {
+            hasAnswered = true;
+            document.getElementById('buttonsGrid').classList.add('hidden');
+            document.getElementById('submittedState').classList.remove('hidden');
+          } else {
+            hasAnswered = false;
+            document.getElementById('buttonsGrid').classList.remove('hidden');
+            document.getElementById('submittedState').classList.add('hidden');
+          }
+
+          // Populate button labels with short text
+          for (let i = 0; i < 4; i++) {
+            document.getElementById(`btnLabel${i}`).textContent = data.options[i] || '';
+          }
+
+          // Enable all buttons
+          document.querySelectorAll('.player-tap-btn').forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+          });
+        }
+
+        else if (data.type === 'REVEAL_PLAYER') {
+          showScreen('resultScreen');
+          const banner = document.getElementById('resultBanner');
+          const icon = document.getElementById('resultIcon');
+          const status = document.getElementById('resultStatus');
+          const pts = document.getElementById('resultPoints');
+          const rank = document.getElementById('resultRank');
+
+          if (data.isCorrect) {
+            banner.className = 'result-banner correct';
+            icon.textContent = '🎉';
+            status.textContent = 'Correct!';
+            pts.textContent = `+${data.pointsEarned} pts`;
+          } else {
+            banner.className = 'result-banner incorrect';
+            icon.textContent = '❌';
+            status.textContent = 'Incorrect';
+            pts.textContent = '+0 pts';
+          }
+
+          rank.textContent = `Rank #${data.rank} • Total: ${data.totalScore.toLocaleString()} pts`;
+        }
+
+        else if (data.type === 'PODIUM') {
+          showScreen('endScreen');
+          const me = data.podium.find(p => p.nickname === myNickname);
+          if (me) {
+            document.getElementById('myFinalScore').textContent = `You finished #${me.rank}! (${me.score} pts)`;
+          } else {
+            document.getElementById('myFinalScore').textContent = `Thanks for playing!`;
+          }
+        }
+
+        else if (data.type === 'ROOM_RESET') {
+          hasAnswered = false;
+          showScreen('waitingScreen');
+        }
+      };
+
+      ws.onclose = () => {
+        // Reconnect silently after 1.5s
+        setTimeout(connect, 1500);
+      };
+
+      ws.onerror = () => {
+        try { ws.close(); } catch(e) {}
+      };
+    }
+
+    // Keepalive Ping every 10 seconds
+    setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'PING' }));
+      }
+    }, 10000);
+
+    // Join Form Submit
+    document.getElementById('joinForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pin = document.getElementById('inputPin').value.trim();
+      const nickname = document.getElementById('inputNickname').value.trim();
+      if (!pin || !nickname) return;
+
+      savedSession = { pin, nickname, playerId: myPlayerId };
+      sessionStorage.setItem('trivia_player', JSON.stringify(savedSession));
+
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        connect();
+      } else {
+        ws.send(JSON.stringify({ type: 'PLAYER_JOIN', pin, nickname, playerId: myPlayerId }));
+      }
+    });
+
+    // Handle Buzzer Taps
+    document.querySelectorAll('.player-tap-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (hasAnswered) return;
+        hasAnswered = true;
+
+        if (navigator.vibrate) navigator.vibrate(40);
+
+        const answerIndex = parseInt(btn.getAttribute('data-index'), 10);
+        ws.send(JSON.stringify({ type: 'PLAYER_ANSWER', answerIndex }));
+
+        // Hide buttons and show locked state
+        document.getElementById('buttonsGrid').classList.add('hidden');
+        document.getElementById('submittedState').classList.remove('hidden');
+      });
+    });
+
+    // Initial connect
+    connect();
+  </script>
+</body>
+</html>

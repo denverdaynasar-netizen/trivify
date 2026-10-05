@@ -1,0 +1,15 @@
+{
+  "name": "trivify",
+  "version": "1.0.0",
+  "description": "Trivify - White-label interactive live trivia engine with zero player caps",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "qrcode": "^1.5.3",
+    "ws": "^8.17.0",
+    "xlsx": "^0.18.5"
+  }
+}

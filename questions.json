@@ -1,0 +1,236 @@
+[
+  {
+    "id": 1,
+    "question": "Where was the first place the couple traveled together?",
+    "timeLimit": 20,
+    "options": [
+      "Paete",
+      "Tagaytay",
+      "Cebu",
+      "Dubai"
+    ],
+    "correctIndex": 0,
+    "explanation": "Their very first trip together was to Paete!"
+  },
+  {
+    "id": 2,
+    "question": "What is the couple's favorite fast-food chain?",
+    "timeLimit": 20,
+    "options": [
+      "Jollibee",
+      "McDonald's",
+      "KFC",
+      "Wendy's"
+    ],
+    "correctIndex": 0,
+    "explanation": "Jollibee is their favorite, and where they had their first date!"
+  },
+  {
+    "id": 3,
+    "question": "Anong dream adventure ng couple?",
+    "timeLimit": 20,
+    "options": [
+      "Skydiving",
+      "Paragliding",
+      "Bungee Jumping",
+      "Hike Mt. Apo"
+    ],
+    "correctIndex": 0,
+    "explanation": "They already conquered Paragliding and Mt. Pulag—next is Skydiving!"
+  },
+  {
+    "id": 4,
+    "question": "Sino ang unang nag-message?",
+    "timeLimit": 15,
+    "options": [
+      "The Groom",
+      "The Bride",
+      "Both at the same time",
+      "Mutual friend initiated"
+    ],
+    "correctIndex": 0,
+    "explanation": "The Groom made the first bold move!"
+  },
+  {
+    "id": 5,
+    "question": "What is the couple's dream travel destination?",
+    "timeLimit": 20,
+    "options": [
+      "Japan",
+      "China",
+      "Switzerland",
+      "India"
+    ],
+    "correctIndex": 2,
+    "explanation": "Their ultimate dream escape is Switzerland!"
+  },
+  {
+    "id": 6,
+    "question": "Where did the couple first meet?",
+    "timeLimit": 20,
+    "options": [
+      "School",
+      "Work",
+      "Through friends",
+      "Online"
+    ],
+    "correctIndex": 0,
+    "explanation": "They first met back in School!"
+  },
+  {
+    "id": 7,
+    "question": "How long did the Groom court the Bride?",
+    "timeLimit": 20,
+    "options": [
+      "1 year",
+      "8 months",
+      "5 months",
+      "3 months"
+    ],
+    "correctIndex": 1,
+    "explanation": "Patience pays off: 8 months of sweet courtship!"
+  },
+  {
+    "id": 8,
+    "question": "What is their favorite activity together?",
+    "timeLimit": 20,
+    "options": [
+      "Traveling",
+      "Gaming",
+      "Hiking",
+      "Sleeping"
+    ],
+    "correctIndex": 0,
+    "explanation": "Exploring the world together is their #1 passion!"
+  },
+  {
+    "id": 9,
+    "question": "What month did the proposal happen?",
+    "timeLimit": 20,
+    "options": [
+      "February",
+      "May",
+      "July",
+      "December"
+    ],
+    "correctIndex": 2,
+    "explanation": "The unforgettable Taiwan proposal happened in July!"
+  },
+  {
+    "id": 10,
+    "question": "How many countries have they traveled to together?",
+    "timeLimit": 20,
+    "options": [
+      "6",
+      "5",
+      "4",
+      "7"
+    ],
+    "correctIndex": 0,
+    "explanation": "6 passport stamps together and counting!"
+  },
+  {
+    "id": 11,
+    "question": "What is the couple's sweet call sign for each other?",
+    "timeLimit": 15,
+    "options": [
+      "Loves",
+      "Babe",
+      "Honey",
+      "Sweetheart"
+    ],
+    "correctIndex": 0,
+    "explanation": "They lovingly call each other 'Loves'!"
+  },
+  {
+    "id": 12,
+    "question": "Where did their unforgettable proposal take place?",
+    "timeLimit": 20,
+    "options": [
+      "Taiwan",
+      "Dubai",
+      "Japan",
+      "Palawan"
+    ],
+    "correctIndex": 0,
+    "explanation": "He popped the question during their trip to Taiwan!"
+  },
+  {
+    "id": 13,
+    "question": "What is the chemical symbol for gold?",
+    "timeLimit": 15,
+    "options": [
+      "Go",
+      "Gd",
+      "Au",
+      "Ag"
+    ],
+    "correctIndex": 2,
+    "explanation": "Au (from Latin Aurum) represents pure gold like their wedding rings!"
+  },
+  {
+    "id": 14,
+    "question": "Which gas do plants absorb from the atmosphere?",
+    "timeLimit": 15,
+    "options": [
+      "Oxygen",
+      "Carbon Dioxide",
+      "Nitrogen",
+      "Hydrogen"
+    ],
+    "correctIndex": 1,
+    "explanation": "Plants absorb Carbon Dioxide (CO2) during photosynthesis!"
+  },
+  {
+    "id": 15,
+    "question": "Water boils at what temperature at sea level?",
+    "timeLimit": 15,
+    "options": [
+      "90°C",
+      "95°C",
+      "100°C",
+      "110°C"
+    ],
+    "correctIndex": 2,
+    "explanation": "Pure water boils at exactly 100°C at 1 atm pressure!"
+  },
+  {
+    "id": 16,
+    "question": "What is the Ideal Gas Equation?",
+    "timeLimit": 20,
+    "options": [
+      "PV = mRT",
+      "F = ma",
+      "P = ρgh",
+      "Q = mcΔT"
+    ],
+    "correctIndex": 0,
+    "explanation": "PV = mRT is the fundamental gas state relation!"
+  },
+  {
+    "id": 17,
+    "question": "What is the value of π (pi) rounded to 4 decimal places?",
+    "timeLimit": 15,
+    "options": [
+      "3.1415",
+      "3.1416",
+      "3.1426",
+      "3.4116"
+    ],
+    "correctIndex": 1,
+    "explanation": "3.14159... rounds up to 3.1416!"
+  },
+  {
+    "id": 18,
+    "question": "How many bones does an adult human body have?",
+    "timeLimit": 15,
+    "options": [
+      "206",
+      "201",
+      "212",
+      "196"
+    ],
+    "correctIndex": 0,
+    "explanation": "An adult human skeleton consists of 206 bones!"
+  }
+]
