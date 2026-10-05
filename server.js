@@ -72,15 +72,28 @@ let publicTunnelUrl = 'https://plenty-loan-compressed-poet.trycloudflare.com';
 
 app.get('/api/network-info', (req, res) => {
   const localIp = getLocalIp();
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+  const dynamicOrigin = `${proto}://${host}`;
+
+  const isCloudHost = host && !host.includes('localhost') && !host.includes('127.0.0.1') && !host.includes('192.168.');
+  const publicUrl = isCloudHost ? `${dynamicOrigin}/play` : (publicTunnelUrl ? `${publicTunnelUrl}/play` : `http://${localIp}:${PORT}/play`);
+
   res.json({
     localIp,
     localUrl: `http://${localIp}:${PORT}/play`,
-    publicUrl: publicTunnelUrl ? `${publicTunnelUrl}/play` : `http://${localIp}:${PORT}/play`
+    publicUrl
   });
 });
 
 app.get('/api/qrcode', async (req, res) => {
-  const text = req.query.text || (publicTunnelUrl ? `${publicTunnelUrl}/play` : `http://${getLocalIp()}:${PORT}/play`);
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+  const dynamicOrigin = `${proto}://${host}`;
+  const isCloudHost = host && !host.includes('localhost') && !host.includes('127.0.0.1') && !host.includes('192.168.');
+  const defaultTarget = isCloudHost ? `${dynamicOrigin}/play` : (publicTunnelUrl ? `${publicTunnelUrl}/play` : `http://${getLocalIp()}:${PORT}/play`);
+
+  const text = req.query.text || defaultTarget;
   try {
     const dataUrl = await QRCode.toDataURL(text, {
       margin: 1,
