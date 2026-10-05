@@ -35,8 +35,35 @@
     </div>
   </header>
 
+  <!-- SCREEN 0: HOST WELCOME & GATEKEEPER LOCK SCREEN (KAHOOT-STYLE) -->
+  <main id="hostLockScreen" class="screen" style="justify-content:center; align-items:center; min-height:80vh;">
+    <div class="player-login-box" style="max-width:520px; padding:3rem 2.5rem; position:relative; overflow:hidden; border:2px solid rgba(212,175,55,0.4); box-shadow:0 25px 60px rgba(0,0,0,0.7);">
+      
+      <!-- Kahoot-style 4 playful floating colorful shapes -->
+      <div style="position:absolute; top:16px; left:20px; color:var(--c-red); font-size:2rem; opacity:0.85; animation: floatUp 3s ease-in-out infinite alternate;">▲</div>
+      <div style="position:absolute; top:16px; right:20px; color:var(--c-blue); font-size:2rem; opacity:0.85; animation: floatDown 3s ease-in-out infinite alternate;">◆</div>
+      <div style="position:absolute; bottom:16px; left:20px; color:var(--c-yellow); font-size:2rem; opacity:0.85; animation: floatDown 3.5s ease-in-out infinite alternate;">●</div>
+      <div style="position:absolute; bottom:16px; right:20px; color:var(--c-green); font-size:2rem; opacity:0.85; animation: floatUp 3.5s ease-in-out infinite alternate;">■</div>
+
+      <img id="welcomeLogo" src="/assets/logo.jpg" alt="Logo" class="brand-logo" style="width:105px; height:105px; margin:0 auto 1.2rem; display:block;">
+      <div style="font-size:0.8rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold); font-weight:900;">TRIVIFY LIVE</div>
+      <h2 style="font-family:var(--font-serif); font-size:2.1rem; color:var(--gold-light); margin:0.4rem 0 0.5rem;">Host Access</h2>
+      <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:2rem;">Enter Host Security PIN to launch the live big-screen presentation</p>
+
+      <form id="hostUnlockForm" onsubmit="event.preventDefault(); unlockHost();">
+        <div style="margin-bottom:1.5rem;">
+          <input type="text" id="inputHostPin" class="input-field" value="123" placeholder="Enter Host PIN" style="letter-spacing:0.25em; font-size:1.8rem; font-weight:900; text-align:center;" maxlength="10" required>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%; padding:1.15rem; font-size:1.15rem; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+          🔓 Launch Presentation Screen ➔
+        </button>
+      </form>
+      <p id="hostPinError" style="color:#ef4444; font-weight:700; margin-top:1.2rem; display:none;">✕ Incorrect Host PIN. Please try again.</p>
+    </div>
+  </main>
+
   <!-- SCREEN 1: LOBBY -->
-  <main id="lobbyScreen" class="screen">
+  <main id="lobbyScreen" class="screen hidden">
     <div class="lobby-grid">
       <!-- QR and Join Info -->
       <div class="join-card">
@@ -172,6 +199,9 @@
         document.getElementById('hostSub').textContent = currentConfig.subtitle || '';
         if (currentConfig.logoUrl) {
           document.getElementById('hostLogo').src = currentConfig.logoUrl;
+          if (document.getElementById('welcomeLogo')) {
+            document.getElementById('welcomeLogo').src = currentConfig.logoUrl;
+          }
         }
       } catch (e) { console.error(e); }
     }
@@ -197,10 +227,30 @@
 
     // Screen Switcher
     function showScreen(screenId) {
-      ['lobbyScreen', 'questionScreen', 'leaderboardScreen', 'podiumScreen'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
+      ['hostLockScreen', 'lobbyScreen', 'questionScreen', 'leaderboardScreen', 'podiumScreen'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
       });
-      document.getElementById(screenId).classList.remove('hidden');
+      const target = document.getElementById(screenId);
+      if (target) target.classList.remove('hidden');
+    }
+
+    // Host Gatekeeper PIN Verification (Default: 123)
+    const REQUIRED_HOST_PIN = "123";
+
+    function unlockHost() {
+      const pin = document.getElementById('inputHostPin').value.trim();
+      if (pin === REQUIRED_HOST_PIN) {
+        document.getElementById('hostPinError').style.display = 'none';
+        sessionStorage.setItem('trivify_host_unlocked', 'true');
+        showScreen('lobbyScreen');
+        if (window.triviaAudio && !triviaAudio.isMuted) {
+          triviaAudio.init();
+          triviaAudio.playLobbyMusic();
+        }
+      } else {
+        document.getElementById('hostPinError').style.display = 'block';
+      }
     }
 
     // Connect WebSocket
@@ -451,6 +501,13 @@
     loadBranding();
     setupJoinLink();
     connectWS();
+
+    // Check initial unlock state
+    if (sessionStorage.getItem('trivify_host_unlocked') === 'true') {
+      showScreen('lobbyScreen');
+    } else {
+      showScreen('hostLockScreen');
+    }
   </script>
 </body>
 </html>

@@ -77,6 +77,16 @@ body {
   color: var(--text-muted);
 }
 
+@keyframes floatUp {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-8px) rotate(10deg); }
+}
+
+@keyframes floatDown {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(8px) rotate(-10deg); }
+}
+
 /* PIN Badge */
 .pin-badge {
   background: rgba(212, 175, 55, 0.15);
