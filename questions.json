@@ -10,7 +10,7 @@
       "Dubai"
     ],
     "correctIndex": 0,
-    "explanation": "Their very first trip together was to Paete!"
+    "explanation": "Their very first roadtrip adventure was to Paete!"
   },
   {
     "id": 2,
@@ -49,7 +49,7 @@
       "Groom"
     ],
     "correctIndex": 3,
-    "explanation": "The Groom made the first move and sent the message!"
+    "explanation": "The Groom made the first bold move and sent the message!"
   },
   {
     "id": 5,
@@ -166,7 +166,7 @@
       "σ = E / R"
     ],
     "correctIndex": 1,
-    "explanation": "Stress (σ) equals Force (F) divided by Cross-Sectional Area (A)!"
+    "explanation": "Stress (σ) equals Force (F) divided by Area (A)!"
   },
   {
     "id": 14,
@@ -245,5 +245,83 @@
     ],
     "correctIndex": 3,
     "explanation": "Water boils at 100°C at normal atmospheric pressure!"
+  },
+  {
+    "id": 20,
+    "question": "What is the Ideal Gas Equation?",
+    "timeLimit": 20,
+    "options": [
+      "PV = mRT",
+      "F = ma",
+      "P = ρgh",
+      "Q = mcΔT"
+    ],
+    "correctIndex": 0,
+    "explanation": "PV = mRT is the fundamental Ideal Gas Law!"
+  },
+  {
+    "id": 21,
+    "question": "What snack is a favorite of the couple?",
+    "timeLimit": 20,
+    "options": [
+      "DQ Ice cream",
+      "Bibingka ni Lola sa Stacruz",
+      "Siomai LB",
+      "Yumburger"
+    ],
+    "correctIndex": 1,
+    "explanation": "Bibingka ni Lola sa Sta. Cruz is their favorite comfort snack!"
+  },
+  {
+    "id": 22,
+    "question": "What is the slope of the line y = 2x + 5?",
+    "timeLimit": 15,
+    "options": [
+      "5",
+      "-2",
+      "2",
+      "0"
+    ],
+    "correctIndex": 2,
+    "explanation": "In slope-intercept form (y = mx + b), the slope m is 2!"
+  },
+  {
+    "id": 23,
+    "question": "What force keeps planets in orbit around the sun?",
+    "timeLimit": 15,
+    "options": [
+      "Magnetism",
+      "Nuclear force",
+      "Friction",
+      "Gravity"
+    ],
+    "correctIndex": 3,
+    "explanation": "Gravitational attraction keeps celestial bodies in orbital paths!"
+  },
+  {
+    "id": 24,
+    "question": "Which sentence is grammatically correct?",
+    "timeLimit": 15,
+    "options": [
+      "He doesn’t like pizza.",
+      "He don’t like pizza.",
+      "He not like pizza.",
+      "He didn’t likes pizza."
+    ],
+    "correctIndex": 0,
+    "explanation": "'He doesn’t like pizza' uses the proper third-person singular auxiliary verb!"
+  },
+  {
+    "id": 25,
+    "question": "Who’s more likely to win in a trivia game?",
+    "timeLimit": 15,
+    "options": [
+      "Groom",
+      "Bride",
+      "Both tie",
+      "Depends on the topic"
+    ],
+    "correctIndex": 1,
+    "explanation": "The Bride takes the crown in trivia showdowns!"
   }
 ]
