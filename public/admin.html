@@ -479,11 +479,14 @@
                   </button>
                 </div>
 
-                <div style="display:flex; gap:0.6rem; align-items:center; margin-top:0.3rem;">
-                  <button onclick="activateEventPreset('${ev.id}')" class="btn-primary" style="flex:1; padding:0.55rem 0.8rem; font-size:0.85rem; border-radius:8px; ${isCurrentlyActive ? 'opacity:0.6;' : ''}">
-                    ${isCurrentlyActive ? '✓ Active Live' : '🚀 Make Active (Live)'}
+                <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.3rem;">
+                  <button onclick="editEventQuestions('${ev.id}')" style="flex:1; background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold-light); padding:0.55rem 0.6rem; font-size:0.82rem; border-radius:8px; cursor:pointer; font-weight:700;" title="Open this event in Question Studio">
+                    ✏️ Edit Questions
                   </button>
-                  <button onclick="deleteEventPreset('${ev.id}', '${escapeHtml(ev.name)}')" style="background:transparent; border:1px solid rgba(239,68,68,0.4); color:#ef4444; padding:0.55rem 0.8rem; border-radius:8px; cursor:pointer; font-size:0.85rem;" title="Delete preset">
+                  <button onclick="activateEventPreset('${ev.id}')" class="btn-primary" style="flex:1; padding:0.55rem 0.6rem; font-size:0.82rem; border-radius:8px; ${isCurrentlyActive ? 'opacity:0.6;' : ''}">
+                    ${isCurrentlyActive ? '✓ Active Live' : '🚀 Make Live'}
+                  </button>
+                  <button onclick="deleteEventPreset('${ev.id}', '${escapeHtml(ev.name)}')" style="background:transparent; border:1px solid rgba(239,68,68,0.4); color:#ef4444; padding:0.55rem 0.6rem; border-radius:8px; cursor:pointer; font-size:0.85rem;" title="Delete preset">
                     🗑️
                   </button>
                 </div>
@@ -493,6 +496,25 @@
         }).join('');
       } catch (err) {
         container.innerHTML = '<div style="color:#ef4444;">Failed to load events library.</div>';
+      }
+    }
+
+    async function editEventQuestions(id) {
+      try {
+        const res = await fetch(`/api/events/activate/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          await loadData();
+          // Switch to Question Studio tab
+          tabs.forEach(o => {
+            document.getElementById(o.btn).classList.remove('active');
+            document.getElementById(o.view).classList.add('hidden');
+          });
+          document.getElementById('tabStudioBtn').classList.add('active');
+          document.getElementById('tabStudioView').classList.remove('hidden');
+        }
+      } catch (e) {
+        alert('Failed to open event in editor.');
       }
     }
 
