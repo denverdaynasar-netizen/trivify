@@ -456,7 +456,8 @@
         }
 
         container.innerHTML = events.map(ev => {
-          const isCurrentlyActive = (currentConfig.eventName === ev.name);
+          const isCurrentlyActive = ev.isCurrent;
+          const isGameOn = ev.isGameActive !== false;
           return `
             <div style="background:var(--bg-card); border:1px solid ${isCurrentlyActive ? 'var(--gold)' : 'var(--border-glass)'}; border-radius:16px; padding:1.5rem; display:flex; flex-direction:column; justify-content:space-between; position:relative; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
               ${isCurrentlyActive ? `<span style="position:absolute; top:12px; right:12px; background:rgba(34,197,94,0.2); border:1px solid #22c55e; color:#22c55e; font-size:0.75rem; font-weight:800; padding:0.25rem 0.6rem; border-radius:999px;">● CURRENTLY LIVE</span>` : ''}
@@ -468,19 +469,43 @@
                   <span>📅 ${ev.date || 'No date'}</span>
                 </div>
               </div>
-              <div style="display:flex; gap:0.6rem; align-items:center; border-top:1px solid var(--border-glass); padding-top:1rem;">
-                <button onclick="activateEventPreset('${ev.id}')" class="btn-primary" style="flex:1; padding:0.6rem 0.8rem; font-size:0.85rem; border-radius:8px; ${isCurrentlyActive ? 'opacity:0.6;' : ''}">
-                  ${isCurrentlyActive ? '✓ Active Live' : '🚀 Make Active (Live)'}
-                </button>
-                <button onclick="deleteEventPreset('${ev.id}', '${escapeHtml(ev.name)}')" style="background:transparent; border:1px solid rgba(239,68,68,0.4); color:#ef4444; padding:0.6rem 0.8rem; border-radius:8px; cursor:pointer; font-size:0.85rem;" title="Delete preset">
-                  🗑️
-                </button>
+
+              <!-- Action Controls: ON/OFF Status Toggle & Activation -->
+              <div style="border-top:1px solid var(--border-glass); padding-top:1rem; display:flex; flex-direction:column; gap:0.6rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:0.8rem; color:var(--text-muted); font-weight:700;">Game Status:</span>
+                  <button onclick="toggleEventStatus('${ev.id}')" style="background:${isGameOn ? '#22c55e' : '#ef4444'}; color:${isGameOn ? '#000' : '#fff'}; border:none; padding:0.35rem 0.9rem; border-radius:999px; font-weight:800; font-size:0.78rem; cursor:pointer;" title="Click to turn Game ON or OFF">
+                    ${isGameOn ? '🟢 ACTIVE (ON)' : '🔴 LOCKED (OFF)'}
+                  </button>
+                </div>
+
+                <div style="display:flex; gap:0.6rem; align-items:center; margin-top:0.3rem;">
+                  <button onclick="activateEventPreset('${ev.id}')" class="btn-primary" style="flex:1; padding:0.55rem 0.8rem; font-size:0.85rem; border-radius:8px; ${isCurrentlyActive ? 'opacity:0.6;' : ''}">
+                    ${isCurrentlyActive ? '✓ Active Live' : '🚀 Make Active (Live)'}
+                  </button>
+                  <button onclick="deleteEventPreset('${ev.id}', '${escapeHtml(ev.name)}')" style="background:transparent; border:1px solid rgba(239,68,68,0.4); color:#ef4444; padding:0.55rem 0.8rem; border-radius:8px; cursor:pointer; font-size:0.85rem;" title="Delete preset">
+                    🗑️
+                  </button>
+                </div>
               </div>
             </div>
           `;
         }).join('');
       } catch (err) {
         container.innerHTML = '<div style="color:#ef4444;">Failed to load events library.</div>';
+      }
+    }
+
+    async function toggleEventStatus(id) {
+      try {
+        const res = await fetch(`/api/events/toggle/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          await loadData();
+          loadEventsList();
+        }
+      } catch (e) {
+        alert('Failed to toggle event status.');
       }
     }
 

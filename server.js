@@ -86,10 +86,13 @@ app.post('/api/questions', (req, res) => {
 // --- MULTI-CLIENT EVENT LIBRARY API ---
 app.get('/api/events', (req, res) => {
   try {
+    const liveConfig = loadConfig();
     const files = fs.readdirSync(EVENTS_DIR).filter(f => f.endsWith('.json'));
     const events = files.map(filename => {
       try {
         const content = JSON.parse(fs.readFileSync(path.join(EVENTS_DIR, filename), 'utf8'));
+        const isCurrent = (liveConfig.eventName === (content.name || content.config?.eventName));
+        const isGameActive = isCurrent ? (liveConfig.isGameActive !== false) : (content.config?.isGameActive !== false);
         return {
           id: filename.replace('.json', ''),
           name: content.name || content.config?.eventName || 'Untitled Event',
@@ -97,6 +100,8 @@ app.get('/api/events', (req, res) => {
           date: content.date || '',
           theme: content.theme || content.config?.theme || 'theme-sky-blue',
           questionCount: Array.isArray(content.questions) ? content.questions.length : 0,
+          isGameActive,
+          isCurrent,
           updatedAt: content.updatedAt || ''
         };
       } catch (e) {
@@ -107,6 +112,43 @@ app.get('/api/events', (req, res) => {
     res.json(events);
   } catch (err) {
     res.status(500).json({ error: 'Failed to list events' });
+  }
+});
+
+// Toggle ON/OFF for an event preset
+app.post('/api/events/toggle/:id', (req, res) => {
+  try {
+    const eventFile = path.join(EVENTS_DIR, `${req.params.id}.json`);
+    if (!fs.existsSync(eventFile)) return res.status(404).json({ error: 'Event not found' });
+
+    const eventData = JSON.parse(fs.readFileSync(eventFile, 'utf8'));
+    if (!eventData.config) eventData.config = {};
+
+    const currentlyActive = eventData.config.isGameActive !== false;
+    const newStatus = !currentlyActive;
+    eventData.config.isGameActive = newStatus;
+    fs.writeFileSync(eventFile, JSON.stringify(eventData, null, 2), 'utf8');
+
+    // If this preset is the currently active live game, also update the live config & kick players if turned off
+    const liveConfig = loadConfig();
+    if (liveConfig.eventName === eventData.name || liveConfig.eventName === eventData.config.eventName) {
+      liveConfig.isGameActive = newStatus;
+      fs.writeFileSync(CONFIG_PATH, JSON.stringify(liveConfig, null, 2), 'utf8');
+
+      if (!newStatus) {
+        // Lock out currently connected players immediately
+        rooms.forEach(room => {
+          room.broadcast({
+            type: 'GAME_LOCKED',
+            message: 'This event is currently closed by the organizer. Thank you for playing!'
+          });
+        });
+      }
+    }
+
+    res.json({ success: true, isGameActive: newStatus });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to toggle event' });
   }
 });
 
