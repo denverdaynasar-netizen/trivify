@@ -138,6 +138,31 @@ app.post('/api/events/save', (req, res) => {
   }
 });
 
+// Save complete custom event preset
+app.post('/api/events/save-custom', (req, res) => {
+  try {
+    const { id, name, client, date, theme, config, questions } = req.body;
+    const cleanId = (id || name || 'event').toLowerCase().replace(/[^a-z0-9_-]/g, '_').substring(0, 50);
+    const eventFile = path.join(EVENTS_DIR, `${cleanId}.json`);
+
+    const eventData = {
+      id: cleanId,
+      name: name || 'Untitled Event',
+      client: client || '',
+      date: date || new Date().toISOString().split('T')[0],
+      theme: theme || 'theme-sky-blue',
+      config: config || loadConfig(),
+      questions: Array.isArray(questions) ? questions : loadQuestions(),
+      updatedAt: new Date().toISOString()
+    };
+
+    fs.writeFileSync(eventFile, JSON.stringify(eventData, null, 2), 'utf8');
+    res.json({ success: true, event: eventData });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save custom event' });
+  }
+});
+
 // Activate an event preset as the LIVE active game
 app.post('/api/events/activate/:id', (req, res) => {
   try {

@@ -171,9 +171,14 @@
           <h2 style="font-family:var(--font-serif); color:var(--gold-light); font-size:1.8rem; margin-bottom:0.3rem;">📁 Client Events Library</h2>
           <p style="color:var(--text-muted); font-size:0.95rem;">Save, switch, and activate games for different clients with 1 click.</p>
         </div>
-        <button id="btnSaveCurrentAsPreset" class="btn-primary" style="font-size:0.95rem; padding:0.6rem 1.4rem;">
-          💾 Save Active Game as New Event Preset
-        </button>
+        <div style="display:flex; gap:0.75rem;">
+          <button id="btnCreateBlankEvent" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-main); font-weight:700; font-size:0.95rem; padding:0.6rem 1.2rem; border-radius:999px; cursor:pointer;">
+            ➕ Create Blank Event
+          </button>
+          <button id="btnSaveCurrentAsPreset" class="btn-primary" style="font-size:0.95rem; padding:0.6rem 1.4rem;">
+            💾 Save Active Game as Preset
+          </button>
+        </div>
       </div>
 
       <!-- Presets List Grid -->
@@ -499,6 +504,59 @@
         }
       } catch (e) {
         alert('Failed to save preset.');
+      }
+    });
+
+    // Create a new blank event preset
+    document.getElementById('btnCreateBlankEvent').addEventListener('click', async () => {
+      const name = prompt('Enter New Event Name (e.g. "Dave 40th Birthday Trivia"):');
+      if (!name) return;
+      const client = prompt('Enter Client Name / Group:', '') || '';
+
+      const cleanId = name.toLowerCase().replace(/[^a-z0-9_-]/g, '_').substring(0, 50);
+
+      // Save a clean starter event with 1 starter slide
+      const starterData = {
+        id: cleanId,
+        name,
+        client,
+        date: new Date().toISOString().split('T')[0],
+        config: {
+          eventName: name,
+          subtitle: `Welcome to ${name}!`,
+          logoUrl: '/assets/logo.jpg',
+          theme: 'theme-sky-blue',
+          primaryColor: '#d4af37',
+          accentColor: '#f3e5ab',
+          isGameActive: true
+        },
+        questions: [
+          {
+            id: 1,
+            question: 'Sample Question #1',
+            timeLimit: 20,
+            options: ['Option A (Correct)', 'Option B', 'Option C', 'Option D'],
+            correctIndex: 0,
+            explanation: 'Welcome to the trivia challenge!'
+          }
+        ]
+      };
+
+      try {
+        const res = await fetch('/api/events/save-custom', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(starterData)
+        });
+        if (res.ok) {
+          if (confirm(`✓ Event preset "${name}" created!\n\nWould you like to switch to it now so you can start editing its questions?`)) {
+            await activateEventPreset(cleanId);
+          } else {
+            loadEventsList();
+          }
+        }
+      } catch (e) {
+        alert('Failed to create event.');
       }
     });
 
