@@ -405,27 +405,72 @@
       });
     });
 
-    // --- MULTI-CLIENT EVENT LIBRARY FUNCTIONS ---
+    // --- MULTI-CLIENT EVENT LIBRARY FUNCTIONS (HYBRID CLOUD + LOCAL STORAGE PERSISTENCE) ---
+    function getStoredLocalPresets() {
+      try {
+        return JSON.parse(localStorage.getItem('trivify_saved_events') || '{}');
+      } catch (e) { return {}; }
+    }
+
+    function saveStoredLocalPreset(preset) {
+      const stored = getStoredLocalPresets();
+      stored[preset.id] = preset;
+      localStorage.setItem('trivify_saved_events', JSON.stringify(stored));
+    }
+
+    function removeStoredLocalPreset(id) {
+      const stored = getStoredLocalPresets();
+      delete stored[id];
+      localStorage.setItem('trivify_saved_events', JSON.stringify(stored));
+    }
+
     async function loadEventsList() {
       const container = document.getElementById('eventsGrid');
       container.innerHTML = '<div style="color:var(--text-muted); padding:2rem;">Loading client events...</div>';
       try {
         const res = await fetch('/api/events');
-        const events = await res.json();
+        let serverEvents = await res.json();
+        if (!Array.isArray(serverEvents)) serverEvents = [];
+
+        // Sync and merge with localStorage so presets survive redeploys
+        const localPresets = getStoredLocalPresets();
+        
+        // Cache server events locally
+        serverEvents.forEach(ev => {
+          if (!localPresets[ev.id]) {
+            localPresets[ev.id] = ev;
+          }
+        });
+
+        // Any local preset not yet on server, re-upload it silently
+        for (const [id, preset] of Object.entries(localPresets)) {
+          if (!serverEvents.find(e => e.id === id)) {
+            serverEvents.push(preset);
+            // silent sync back to server
+            fetch('/api/events/save-custom', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(preset)
+            }).catch(() => {});
+          }
+        }
+        localStorage.setItem('trivify_saved_events', JSON.stringify(localPresets));
+
+        const events = serverEvents;
 
         if (events.length === 0) {
           container.innerHTML = `
             <div style="grid-column:1/-1; text-align:center; padding:3rem; background:var(--bg-card); border-radius:16px; border:1px solid var(--border-glass);">
               <div style="font-size:3rem; margin-bottom:1rem;">📂</div>
               <h3 style="color:var(--gold-light); margin-bottom:0.5rem;">No Event Presets Saved Yet</h3>
-              <p style="color:var(--text-muted); margin-bottom:1.5rem;">Click "Save Active Game as New Event Preset" above to create your first client preset.</p>
+              <p style="color:var(--text-muted); margin-bottom:1.5rem;">Click "Create Blank Event" above to create your first client preset.</p>
             </div>
           `;
           return;
         }
 
         container.innerHTML = events.map(ev => {
-          const isCurrentlyActive = ev.isCurrent;
+          const isCurrentlyActive = (currentConfig.eventName === ev.name);
           const isGameOn = ev.isGameActive !== false;
           return `
             <div style="background:var(--bg-card); border:1px solid ${isCurrentlyActive ? 'var(--gold)' : 'var(--border-glass)'}; border-radius:16px; padding:1.5rem; display:flex; flex-direction:column; justify-content:space-between; position:relative; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
@@ -434,7 +479,7 @@
                 <span style="font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); font-weight:800;">${escapeHtml(ev.client || 'CLIENT EVENT')}</span>
                 <h3 style="font-size:1.25rem; color:var(--text-main); margin:0.3rem 0 0.8rem; font-family:var(--font-serif);">${escapeHtml(ev.name)}</h3>
                 <div style="display:flex; gap:1rem; font-size:0.85rem; color:var(--text-muted); margin-bottom:1.2rem;">
-                  <span>📝 ${ev.questionCount} Questions</span>
+                  <span>📝 ${ev.questionCount || (ev.questions ? ev.questions.length : 0)} Questions</span>
                   <span>📅 ${ev.date || 'No date'}</span>
                 </div>
               </div>
@@ -567,6 +612,7 @@
           body: JSON.stringify(starterData)
         });
         if (res.ok) {
+          saveStoredLocalPreset(starterData);
           if (confirm(`✓ Event preset "${name}" created!\n\nWould you like to switch to it now so you can start editing its questions?`)) {
             await activateEventPreset(cleanId);
           } else {
@@ -596,8 +642,9 @@
     async function deleteEventPreset(id, name) {
       if (!confirm(`Delete preset "${name}" from your library?`)) return;
       try {
+        removeStoredLocalPreset(id);
         const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
-        if (res.ok) loadEventsList();
+        loadEventsList();
       } catch (e) { alert('Failed to delete preset.'); }
     }
 
