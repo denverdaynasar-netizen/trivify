@@ -287,6 +287,18 @@
           updatePlayerList(data.players);
         }
 
+        else if (data.type === 'CONFIG_UPDATED') {
+          currentConfig = data.config;
+          if (currentConfig.eventName) document.getElementById('hostTitle').textContent = currentConfig.eventName;
+          if (currentConfig.subtitle) document.getElementById('hostSub').textContent = currentConfig.subtitle;
+          if (currentConfig.logoUrl) {
+            document.getElementById('hostLogo').src = currentConfig.logoUrl;
+            if (document.getElementById('welcomeLogo')) {
+              document.getElementById('welcomeLogo').src = currentConfig.logoUrl;
+            }
+          }
+        }
+
         else if (data.type === 'PLAYER_JOINED' || data.type === 'PLAYER_LEFT') {
           updatePlayerList(data.players);
         }

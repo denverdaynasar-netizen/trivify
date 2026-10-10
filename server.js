@@ -72,8 +72,30 @@ function recordGameSession(sessionData) {
 // REST Endpoints
 app.get('/api/config', (req, res) => res.json(loadConfig()));
 app.post('/api/config', (req, res) => {
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(req.body, null, 2), 'utf8');
-  res.json({ success: true, config: req.body });
+  const updatedConfig = req.body;
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(updatedConfig, null, 2), 'utf8');
+
+  // Sync to matching event preset file if one exists
+  try {
+    const files = fs.readdirSync(EVENTS_DIR).filter(f => f.endsWith('.json'));
+    files.forEach(filename => {
+      const filePath = path.join(EVENTS_DIR, filename);
+      const ev = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      if (ev.name === updatedConfig.eventName || (ev.config && ev.config.eventName === updatedConfig.eventName)) {
+        ev.config = { ...ev.config, ...updatedConfig };
+        fs.writeFileSync(filePath, JSON.stringify(ev, null, 2), 'utf8');
+      }
+    });
+  } catch (err) {
+    console.error('Error syncing config to preset:', err);
+  }
+
+  // Broadcast updated config to all active rooms
+  rooms.forEach(room => {
+    room.broadcast({ type: 'CONFIG_UPDATED', config: updatedConfig });
+  });
+
+  res.json({ success: true, config: updatedConfig });
 });
 
 app.get('/api/questions', (req, res) => res.json(loadQuestions()));
@@ -99,6 +121,7 @@ app.get('/api/events', (req, res) => {
           client: content.client || '',
           date: content.date || '',
           theme: content.theme || content.config?.theme || 'theme-sky-blue',
+          logoUrl: content.config?.logoUrl || content.logoUrl || '/assets/logo.jpg',
           questionCount: Array.isArray(content.questions) ? content.questions.length : 0,
           isGameActive,
           isCurrent,

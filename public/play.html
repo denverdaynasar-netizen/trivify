@@ -200,6 +200,13 @@
           }
         }
 
+        else if (data.type === 'CONFIG_UPDATED') {
+          if (data.config) {
+            if (data.config.logoUrl) document.getElementById('playLogo').src = data.config.logoUrl;
+            if (data.config.eventName) document.getElementById('playBrandTitle').textContent = data.config.eventName;
+          }
+        }
+
         else if (data.type === 'QUESTION_START_PLAYER') {
           showScreen('questionPlayerScreen');
           document.getElementById('playerQCounter').textContent = `Question ${data.index} of ${data.total}`;

@@ -31,7 +31,7 @@
       <button class="tab-btn active" id="tabStudioBtn">🎨 Question Studio (Visual)</button>
       <button class="tab-btn" id="tabEventsBtn">📁 Client Events Library</button>
       <button class="tab-btn" id="tabHistoryBtn">📜 Game History & Reports</button>
-      <button class="tab-btn" id="tabBrandBtn">👑 Active Branding</button>
+      <button class="tab-btn" id="tabBrandBtn">👑 Branding & Monogram</button>
       <button class="tab-btn" id="tabJsonBtn">⚡ Bulk JSON Import</button>
     </nav>
 
@@ -126,10 +126,10 @@
       </section>
     </div>
 
-    <!-- TAB 2: BRANDING -->
+    <!-- TAB 2: BRANDING & MONOGRAM -->
     <div id="tabBrandView" class="hidden" style="max-width:800px; margin:2rem auto;">
       <div class="admin-container" style="margin-top:0;">
-        <h2 style="font-family:var(--font-serif); color:var(--gold-light); margin-bottom:1.5rem; font-size:1.6rem;">🎨 Event Branding</h2>
+        <h2 style="font-family:var(--font-serif); color:var(--gold-light); margin-bottom:1.5rem; font-size:1.6rem;">🎨 Event Branding & Monogram</h2>
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem;">
           <div class="form-group">
@@ -142,12 +142,39 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Logo Path or Image URL</label>
-          <input type="text" id="cfgLogoUrl" class="input-field" style="text-align:left;" placeholder="/assets/logo.jpg">
+        <!-- Dedicated Monogram Upload & Preview Section -->
+        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-glass); border-radius:14px; padding:1.4rem; margin:1.3rem 0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.9rem;">
+            <label style="font-weight:700; color:var(--gold-light); font-size:1.05rem; margin:0;">💍 Event Monogram / Logo</label>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Displays on Host Big Screen & All Player Phones</span>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+            <!-- Live Preview Avatar -->
+            <div style="position:relative; width:95px; height:95px; border-radius:50%; border:3px solid var(--gold); overflow:hidden; background:#000; flex-shrink:0; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.5);">
+              <img id="brandPreviewLogo" src="/assets/logo.jpg" alt="Monogram Preview" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+
+            <!-- Upload Controls & Input -->
+            <div style="flex:1; min-width:260px;">
+              <div style="display:flex; gap:0.6rem; margin-bottom:0.8rem; flex-wrap:wrap;">
+                <input type="file" id="logoFileInput" accept="image/*" style="display:none;">
+                <button type="button" id="btnUploadLogo" class="btn-primary" style="font-size:0.85rem; padding:0.55rem 1.1rem; cursor:pointer;">
+                  📁 Upload Monogram from Device
+                </button>
+                <button type="button" id="btnResetLogo" style="background:transparent; border:1px solid var(--border-glass); color:var(--text-muted); padding:0.55rem 1rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">
+                  🔄 Reset Default Monogram
+                </button>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem;">Or enter custom image URL / path:</label>
+                <input type="text" id="cfgLogoUrl" class="input-field" style="text-align:left; font-size:0.88rem; padding:0.5rem 0.8rem;" placeholder="/assets/logo.jpg">
+              </div>
+            </div>
+          </div>
         </div>
 
-        <button id="btnSaveConfig" class="btn-primary" style="font-size:1rem; padding:0.7rem 1.8rem;">Save Branding</button>
+        <button id="btnSaveConfig" class="btn-primary" style="font-size:1rem; padding:0.7rem 1.8rem;">💾 Save Branding & Monogram</button>
         <span id="cfgStatus" style="margin-left:1rem; color:#4ade80; font-weight:600;"></span>
       </div>
     </div>
@@ -221,7 +248,10 @@
         document.getElementById('cfgEventName').value = currentConfig.eventName || '';
         document.getElementById('cfgSubtitle').value = currentConfig.subtitle || '';
         document.getElementById('cfgLogoUrl').value = currentConfig.logoUrl || '';
-        if (currentConfig.logoUrl) document.getElementById('adminLogo').src = currentConfig.logoUrl;
+        const logo = currentConfig.logoUrl || '/assets/logo.jpg';
+        document.getElementById('adminLogo').src = logo;
+        const brandPrev = document.getElementById('brandPreviewLogo');
+        if (brandPrev) brandPrev.src = logo;
 
         const qRes = await fetch('/api/questions');
         questions = await qRes.json();
@@ -477,7 +507,10 @@
               ${isCurrentlyActive ? `<span style="position:absolute; top:12px; right:12px; background:rgba(34,197,94,0.2); border:1px solid #22c55e; color:#22c55e; font-size:0.75rem; font-weight:800; padding:0.25rem 0.6rem; border-radius:999px;">● CURRENTLY LIVE</span>` : ''}
               <div>
                 <span style="font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); font-weight:800;">${escapeHtml(ev.client || 'CLIENT EVENT')}</span>
-                <h3 style="font-size:1.25rem; color:var(--text-main); margin:0.3rem 0 0.8rem; font-family:var(--font-serif);">${escapeHtml(ev.name)}</h3>
+                <div style="display:flex; align-items:center; gap:0.75rem; margin:0.35rem 0 0.8rem;">
+                  <img src="${escapeHtml(ev.logoUrl || '/assets/logo.jpg')}" alt="Monogram" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:1.5px solid var(--gold); background:#000; flex-shrink:0;">
+                  <h3 style="font-size:1.25rem; color:var(--text-main); margin:0; font-family:var(--font-serif);">${escapeHtml(ev.name)}</h3>
+                </div>
                 <div style="display:flex; gap:1rem; font-size:0.85rem; color:var(--text-muted); margin-bottom:1.2rem;">
                   <span>📝 ${ev.questionCount || (ev.questions ? ev.questions.length : 0)} Questions</span>
                   <span>📅 ${ev.date || 'No date'}</span>
@@ -702,14 +735,85 @@
       } catch (e) { alert('Failed to clear sessions.'); }
     });
 
-    // Save Branding
+    // --- MONOGRAM UPLOAD & LIVE PREVIEW HANDLERS ---
+    const logoFileInput = document.getElementById('logoFileInput');
+    const btnUploadLogo = document.getElementById('btnUploadLogo');
+    const btnResetLogo = document.getElementById('btnResetLogo');
+    const cfgLogoUrl = document.getElementById('cfgLogoUrl');
+    const brandPreviewLogo = document.getElementById('brandPreviewLogo');
+    const adminLogo = document.getElementById('adminLogo');
+
+    if (btnUploadLogo && logoFileInput) {
+      btnUploadLogo.addEventListener('click', () => {
+        logoFileInput.click();
+      });
+
+      logoFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            // Downscale to max 500x500 to keep it ultra lightweight (<60KB) and load instantly on mobile
+            const maxDim = 500;
+            let width = img.width;
+            let height = img.height;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+            if (cfgLogoUrl) cfgLogoUrl.value = optimizedDataUrl;
+            if (brandPreviewLogo) brandPreviewLogo.src = optimizedDataUrl;
+            if (adminLogo) adminLogo.src = optimizedDataUrl;
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (cfgLogoUrl) {
+      cfgLogoUrl.addEventListener('input', (e) => {
+        const val = e.target.value.trim() || '/assets/logo.jpg';
+        if (brandPreviewLogo) brandPreviewLogo.src = val;
+        if (adminLogo) adminLogo.src = val;
+      });
+    }
+
+    if (btnResetLogo) {
+      btnResetLogo.addEventListener('click', () => {
+        if (cfgLogoUrl) cfgLogoUrl.value = '/assets/logo.jpg';
+        if (brandPreviewLogo) brandPreviewLogo.src = '/assets/logo.jpg';
+        if (adminLogo) adminLogo.src = '/assets/logo.jpg';
+      });
+    }
+
+    // Save Branding & Monogram
     document.getElementById('btnSaveConfig').addEventListener('click', async () => {
+      const logoUrl = document.getElementById('cfgLogoUrl').value.trim() || '/assets/logo.jpg';
+      const eventName = document.getElementById('cfgEventName').value.trim();
+      const subtitle = document.getElementById('cfgSubtitle').value.trim();
+
       const body = {
-        eventName: document.getElementById('cfgEventName').value,
-        subtitle: document.getElementById('cfgSubtitle').value,
-        logoUrl: document.getElementById('cfgLogoUrl').value,
-        primaryColor: "#d4af37",
-        accentColor: "#f3e5ab",
+        eventName: eventName,
+        subtitle: subtitle,
+        logoUrl: logoUrl,
+        primaryColor: currentConfig.primaryColor || "#d4af37",
+        accentColor: currentConfig.accentColor || "#f3e5ab",
         isGameActive: currentConfig.isGameActive !== false
       };
 
@@ -720,10 +824,32 @@
           body: JSON.stringify(body)
         });
         if (res.ok) {
-          document.getElementById('cfgStatus').textContent = '✓ Branding Saved!';
+          currentConfig = { ...currentConfig, ...body };
+          if (adminLogo) adminLogo.src = logoUrl;
+          if (brandPreviewLogo) brandPreviewLogo.src = logoUrl;
+
+          // Also sync with stored local preset matching this eventName
+          const localPresets = getStoredLocalPresets();
+          for (const [id, preset] of Object.entries(localPresets)) {
+            if (preset.name === eventName || (preset.config && preset.config.eventName === eventName)) {
+              if (!preset.config) preset.config = {};
+              preset.config.logoUrl = logoUrl;
+              preset.config.eventName = eventName;
+              preset.config.subtitle = subtitle;
+              preset.logoUrl = logoUrl;
+              saveStoredLocalPreset(preset);
+              fetch('/api/events/save-custom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(preset)
+              }).catch(() => {});
+            }
+          }
+
+          document.getElementById('cfgStatus').textContent = '✓ Monogram & Branding Saved!';
           setTimeout(() => { document.getElementById('cfgStatus').textContent = ''; }, 3000);
         }
-      } catch (e) { alert('Error saving config'); }
+      } catch (e) { alert('Error saving config: ' + e.message); }
     });
 
     // Bulk JSON Import
