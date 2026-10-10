@@ -70,6 +70,7 @@ function recordGameSession(sessionData) {
 }
 
 // REST Endpoints
+app.get('/api/ping', (req, res) => res.json({ status: 'ok', time: Date.now() }));
 app.get('/api/config', (req, res) => res.json(loadConfig()));
 app.post('/api/config', (req, res) => {
   const updatedConfig = req.body;
@@ -256,6 +257,18 @@ app.post('/api/events/activate/:id', (req, res) => {
     res.json({ success: true, message: `Activated "${eventData.name}" as live game!`, event: eventData });
   } catch (err) {
     res.status(500).json({ error: 'Failed to activate event' });
+  }
+});
+
+// Get a specific event preset
+app.get('/api/events/:id', (req, res) => {
+  try {
+    const eventFile = path.join(EVENTS_DIR, `${req.params.id}.json`);
+    if (!fs.existsSync(eventFile)) return res.status(404).json({ error: 'Event not found' });
+    const content = JSON.parse(fs.readFileSync(eventFile, 'utf8'));
+    res.json(content);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read event' });
   }
 });
 

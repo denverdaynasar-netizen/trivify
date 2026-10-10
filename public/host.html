@@ -197,7 +197,10 @@
       </div>
     </div>
 
-    <div style="text-align:center; margin-top:2rem;">
+    <div style="text-align:center; margin-top:2rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      <button id="btnCopyWinners" style="background:rgba(212,175,55,0.18); border:1px solid var(--gold); color:var(--gold-light); font-weight:700; padding:0.8rem 1.6rem; border-radius:999px; cursor:pointer; font-size:1.05rem; box-shadow:0 4px 15px rgba(212,175,55,0.2);">
+        📋 Copy Winners for MC
+      </button>
       <button id="btnRestart" class="btn-primary">Play Again</button>
     </div>
   </main>
@@ -447,9 +450,12 @@
       btnNext.textContent = isLastQuestion ? 'Reveal Final Winners! 👑' : 'Next Question ➔';
     }
 
+    let currentPodiumWinners = [];
+
     function renderPodium(data) {
       showScreen('podiumScreen');
-      const p = data.podium;
+      const p = data.podium || [];
+      currentPodiumWinners = p;
 
       if (p[0]) {
         document.getElementById('podiumName1').textContent = `👑 ${p[0].nickname}`;
@@ -545,6 +551,35 @@
     if (themeSel) {
       themeSel.addEventListener('change', (e) => setTheme(e.target.value));
     }
+
+    // Copy Podium Winners to Clipboard for MC
+    const btnCopyEl = document.getElementById('btnCopyWinners');
+    if (btnCopyEl) {
+      btnCopyEl.addEventListener('click', () => {
+        if (!currentPodiumWinners || currentPodiumWinners.length === 0) {
+          alert('No podium winners to copy yet.');
+          return;
+        }
+        const lines = [
+          `🏆 ${currentConfig.eventName || 'TRIVIA GAME'} - FINAL PODIUM WINNERS:`,
+          currentPodiumWinners[0] ? `🥇 1st Place: ${currentPodiumWinners[0].nickname} (${currentPodiumWinners[0].score.toLocaleString()} pts)` : '',
+          currentPodiumWinners[1] ? `🥈 2nd Place: ${currentPodiumWinners[1].nickname} (${currentPodiumWinners[1].score.toLocaleString()} pts)` : '',
+          currentPodiumWinners[2] ? `🥉 3rd Place: ${currentPodiumWinners[2].nickname} (${currentPodiumWinners[2].score.toLocaleString()} pts)` : ''
+        ].filter(Boolean).join('\n');
+
+        navigator.clipboard.writeText(lines).then(() => {
+          btnCopyEl.textContent = '✓ Winners Copied to Clipboard!';
+          setTimeout(() => { btnCopyEl.textContent = '📋 Copy Winners for MC'; }, 3000);
+        }).catch(() => {
+          prompt('Copy the winners below:', lines);
+        });
+      });
+    }
+
+    // Render Free-Tier Keep-Alive Heartbeat (every 4 mins to prevent cold-starts during events)
+    setInterval(() => {
+      fetch('/api/ping').catch(() => {});
+    }, 4 * 60 * 1000);
 
     // Init
     loadBranding();

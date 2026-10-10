@@ -199,7 +199,11 @@
           <h2 style="font-family:var(--font-serif); color:var(--gold-light); font-size:1.8rem; margin-bottom:0.3rem;">📁 Client Events Library</h2>
           <p style="color:var(--text-muted); font-size:0.95rem;">Save, switch, and activate games for different clients with 1 click.</p>
         </div>
-        <div style="display:flex; gap:0.75rem;">
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <input type="file" id="inputImportEventFile" accept=".json" style="display:none;">
+          <button id="btnImportEventFile" style="background:transparent; border:1px solid var(--border-glass); color:var(--text-muted); font-weight:700; font-size:0.9rem; padding:0.6rem 1.1rem; border-radius:999px; cursor:pointer;" title="Upload an exported event .json file">
+            ⬆️ Import Event (.json)
+          </button>
           <button id="btnCreateBlankEvent" style="background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); color:var(--text-main); font-weight:700; font-size:0.95rem; padding:0.6rem 1.2rem; border-radius:999px; cursor:pointer;">
             ➕ Create Blank Event
           </button>
@@ -533,6 +537,9 @@
                   <button onclick="activateEventPreset('${ev.id}')" class="btn-primary" style="flex:1; padding:0.55rem 0.6rem; font-size:0.82rem; border-radius:8px; ${isCurrentlyActive ? 'opacity:0.6;' : ''}">
                     ${isCurrentlyActive ? '✓ Active Live' : '🚀 Make Live'}
                   </button>
+                  <button onclick="exportEventPreset('${ev.id}')" style="background:transparent; border:1px solid var(--border-glass); color:var(--text-muted); padding:0.55rem 0.6rem; border-radius:8px; cursor:pointer; font-size:0.85rem;" title="Download event backup file (.json)">
+                    ⬇️
+                  </button>
                   <button onclick="deleteEventPreset('${ev.id}', '${escapeHtml(ev.name)}')" style="background:transparent; border:1px solid rgba(239,68,68,0.4); color:#ef4444; padding:0.55rem 0.6rem; border-radius:8px; cursor:pointer; font-size:0.85rem;" title="Delete preset">
                     🗑️
                   </button>
@@ -700,6 +707,8 @@
           return;
         }
 
+        window.allLoadedSessions = sessions;
+
         container.innerHTML = sessions.map((s, idx) => {
           const dateStr = new Date(s.playedAt).toLocaleString();
           const winnersList = (s.winners || []).map(w => `${w.rank === 1 ? '🥇' : w.rank === 2 ? '🥈' : '🥉'} ${escapeHtml(w.nickname)} (${w.score.toLocaleString()} pts)`).join(' &nbsp;•&nbsp; ');
@@ -715,9 +724,16 @@
                 </div>
                 <span style="background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold-light); font-size:0.75rem; font-weight:800; padding:0.3rem 0.7rem; border-radius:999px;">PIN: ${escapeHtml(s.pin || 'WEDDING')}</span>
               </div>
-              <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:0.8rem 1rem; font-size:0.9rem; color:var(--text-main); display:flex; align-items:center; gap:0.5rem;">
-                <span style="font-weight:700; color:var(--gold);">🏆 Podium Winners:</span>
-                <span>${winnersList || 'No scores registered'}</span>
+              <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:0.8rem 1rem; font-size:0.9rem; color:var(--text-main); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                  <span style="font-weight:700; color:var(--gold);">🏆 Podium Winners:</span>
+                  <span>${winnersList || 'No scores registered'}</span>
+                </div>
+                ${(s.winners && s.winners.length > 0) ? `
+                  <button onclick="copySessionWinners(${idx})" id="btnCopySession_${idx}" style="background:rgba(212,175,55,0.2); border:1px solid var(--gold); color:var(--gold-light); font-size:0.75rem; font-weight:700; padding:0.3rem 0.7rem; border-radius:6px; cursor:pointer;" title="Copy winners to clipboard">
+                    📋 Copy for MC
+                  </button>
+                ` : ''}
               </div>
             </div>
           `;
@@ -878,6 +894,96 @@
       div.innerText = str || '';
       return div.innerHTML;
     }
+
+    // --- EXPORT & IMPORT EVENT PRESETS ---
+    async function exportEventPreset(id) {
+      try {
+        let data = getStoredLocalPresets()[id];
+        if (!data || !data.questions) {
+          const res = await fetch(`/api/events/${id}`);
+          if (res.ok) data = await res.json();
+        }
+        if (!data) { alert('Event preset data not found.'); return; }
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${(data.name || id).toLowerCase().replace(/[^a-z0-9_-]/g, '_')}_backup.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('Failed to export event: ' + err.message);
+      }
+    }
+
+    const btnImportEventFile = document.getElementById('btnImportEventFile');
+    const inputImportEventFile = document.getElementById('inputImportEventFile');
+    if (btnImportEventFile && inputImportEventFile) {
+      btnImportEventFile.addEventListener('click', () => {
+        inputImportEventFile.click();
+      });
+
+      inputImportEventFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+          try {
+            const parsed = JSON.parse(evt.target.result);
+            if (!parsed.name && !parsed.config?.eventName) {
+              throw new Error('File does not appear to be a valid Trivify event preset.');
+            }
+            const cleanId = (parsed.id || parsed.name || 'imported_event').toLowerCase().replace(/[^a-z0-9_-]/g, '_').substring(0, 50);
+            parsed.id = cleanId;
+            saveStoredLocalPreset(parsed);
+            await fetch('/api/events/save-custom', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(parsed)
+            });
+            alert(`✓ Successfully imported "${parsed.name || parsed.id}" into your library!`);
+            loadEventsList();
+          } catch (err) {
+            alert('Import error: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    // Copy Session Winners for MC
+    function copySessionWinners(idx) {
+      if (!window.allLoadedSessions || !window.allLoadedSessions[idx]) return;
+      const s = window.allLoadedSessions[idx];
+      const winners = s.winners || [];
+      if (winners.length === 0) {
+        alert('No winners recorded for this session.');
+        return;
+      }
+      const lines = [
+        `🏆 ${s.eventName || 'TRIVIA GAME'} - PODIUM WINNERS:`,
+        winners[0] ? `🥇 1st: ${winners[0].nickname} (${winners[0].score.toLocaleString()} pts)` : '',
+        winners[1] ? `🥈 2nd: ${winners[1].nickname} (${winners[1].score.toLocaleString()} pts)` : '',
+        winners[2] ? `🥉 3rd: ${winners[2].nickname} (${winners[2].score.toLocaleString()} pts)` : ''
+      ].filter(Boolean).join('\n');
+
+      navigator.clipboard.writeText(lines).then(() => {
+        const btn = document.getElementById(`btnCopySession_${idx}`);
+        if (btn) {
+          btn.textContent = '✓ Copied!';
+          setTimeout(() => { btn.textContent = '📋 Copy for MC'; }, 2500);
+        }
+      }).catch(() => {
+        prompt('Copy the winners below:', lines);
+      });
+    }
+
+    // Render Free-Tier Keep-Alive Heartbeat (every 4 mins)
+    setInterval(() => {
+      fetch('/api/ping').catch(() => {});
+    }, 4 * 60 * 1000);
 
     loadData();
   </script>
