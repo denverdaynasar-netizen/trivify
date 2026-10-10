@@ -21,11 +21,7 @@
       </div>
     </div>
     <div style="display:flex; gap:12px; align-items:center;">
-      <button id="btnGameStatusToggle" style="background:#22c55e; border:none; color:#000; font-weight:800; font-size:0.9rem; padding:0.6rem 1.2rem; border-radius:999px; cursor:pointer;" title="Click to turn game ON or OFF">
-        🟢 GAME IS LIVE (ON)
-      </button>
-      <button id="btnGlobalSave" class="btn-primary" style="font-size:0.95rem; padding:0.6rem 1.4rem;">💾 Save & Publish</button>
-      <a href="/host" target="_blank" style="color:var(--gold-light); text-decoration:none; font-size:0.9rem; font-weight:700;">Open Host Screen 🖥️</a>
+      <a href="/host" target="_blank" style="background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold-light); text-decoration:none; font-size:0.9rem; font-weight:700; padding:0.5rem 1.1rem; border-radius:999px;">Open Host Screen 🖥️</a>
     </div>
   </header>
 
@@ -52,8 +48,11 @@
           <!-- Dynamic Slide Cards -->
         </div>
 
-        <button id="btnAddQuestion" class="btn-primary" style="font-size:1rem; padding:0.8rem; width:100%; border-radius:12px;">
+        <button id="btnAddQuestion" class="btn-primary" style="font-size:1rem; padding:0.8rem; width:100%; border-radius:12px; margin-bottom:0.6rem;">
           ➕ Add Question
+        </button>
+        <button id="btnStudioSave" style="background:#22c55e; border:none; color:#000; font-weight:800; font-size:0.95rem; padding:0.75rem; width:100%; border-radius:12px; cursor:pointer;" title="Save changes to this event">
+          💾 Save Changes
         </button>
       </aside>
 
@@ -213,42 +212,11 @@
     let activeIndex = 0;
     let currentConfig = { isGameActive: true };
 
-    function updateStatusToggleUI(isActive) {
-      const btn = document.getElementById('btnGameStatusToggle');
-      if (isActive) {
-        btn.textContent = '🟢 GAME IS LIVE (ON)';
-        btn.style.background = '#22c55e';
-        btn.style.color = '#000';
-      } else {
-        btn.textContent = '🔴 GAME IS LOCKED (OFF)';
-        btn.style.background = '#ef4444';
-        btn.style.color = '#fff';
-      }
-    }
-
-    // Toggle click listener
-    document.getElementById('btnGameStatusToggle').addEventListener('click', async () => {
-      const newState = (currentConfig.isGameActive === false) ? true : false;
-      currentConfig.isGameActive = newState;
-      updateStatusToggleUI(newState);
-
-      try {
-        await fetch('/api/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(currentConfig)
-        });
-      } catch (err) {
-        console.error('Error toggling game status:', err);
-      }
-    });
-
     // Load initial data
     async function loadData() {
       try {
         const cfgRes = await fetch('/api/config');
         currentConfig = await cfgRes.json();
-        updateStatusToggleUI(currentConfig.isGameActive !== false);
 
         document.getElementById('cfgEventName').value = currentConfig.eventName || '';
         document.getElementById('cfgSubtitle').value = currentConfig.subtitle || '';
@@ -392,20 +360,21 @@
           body: JSON.stringify(questions)
         });
         if (res.ok) {
-          const btn = document.getElementById('btnGlobalSave');
-          btn.textContent = '✓ Saved & Published!';
-          btn.style.background = '#22c55e';
-          setTimeout(() => {
-            btn.textContent = '💾 Save & Publish';
-            btn.style.background = '';
-          }, 2500);
+          const btn = document.getElementById('btnStudioSave');
+          if (btn) {
+            btn.textContent = '✓ Saved!';
+            setTimeout(() => {
+              btn.textContent = '💾 Save Changes';
+            }, 2500);
+          }
         }
       } catch (e) {
         alert('Error saving questions: ' + e.message);
       }
     }
 
-    document.getElementById('btnGlobalSave').addEventListener('click', saveAllQuestions);
+    const btnSaveEl = document.getElementById('btnStudioSave');
+    if (btnSaveEl) btnSaveEl.addEventListener('click', saveAllQuestions);
 
     // Tab Switcher
     const tabs = [
