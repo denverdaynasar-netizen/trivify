@@ -33,7 +33,9 @@
     <!-- Tab Navigation -->
     <nav class="tab-nav">
       <button class="tab-btn active" id="tabStudioBtn">🎨 Question Studio (Visual)</button>
-      <button class="tab-btn" id="tabBrandBtn">👑 Event Branding</button>
+      <button class="tab-btn" id="tabEventsBtn">📁 Client Events Library</button>
+      <button class="tab-btn" id="tabHistoryBtn">📜 Game History & Reports</button>
+      <button class="tab-btn" id="tabBrandBtn">👑 Active Branding</button>
       <button class="tab-btn" id="tabJsonBtn">⚡ Bulk JSON Import</button>
     </nav>
 
@@ -161,6 +163,40 @@
           <button id="btnSaveRawJson" class="btn-primary" style="font-size:1rem; padding:0.7rem 1.8rem;">Import JSON</button>
           <button id="btnFormatJson" style="background:transparent; border:1px solid var(--border-glass); color:var(--text-muted); padding:0.6rem 1rem; border-radius:8px; cursor:pointer;">Beautify JSON</button>
         </div>
+      </div>
+    <!-- TAB: CLIENT EVENTS LIBRARY (MULTI-CLIENT DASHBOARD) -->
+    <div id="tabEventsView" class="hidden" style="max-width:1100px; margin:1.5rem auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <div>
+          <h2 style="font-family:var(--font-serif); color:var(--gold-light); font-size:1.8rem; margin-bottom:0.3rem;">📁 Client Events Library</h2>
+          <p style="color:var(--text-muted); font-size:0.95rem;">Save, switch, and activate games for different clients with 1 click.</p>
+        </div>
+        <button id="btnSaveCurrentAsPreset" class="btn-primary" style="font-size:0.95rem; padding:0.6rem 1.4rem;">
+          💾 Save Active Game as New Event Preset
+        </button>
+      </div>
+
+      <!-- Presets List Grid -->
+      <div id="eventsGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1.5rem;">
+        <!-- Dynamically rendered client event cards -->
+      </div>
+    </div>
+
+    <!-- TAB: GAME HISTORY & REPORTS -->
+    <div id="tabHistoryView" class="hidden" style="max-width:1100px; margin:1.5rem auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <div>
+          <h2 style="font-family:var(--font-serif); color:var(--gold-light); font-size:1.8rem; margin-bottom:0.3rem;">📜 Game Session History & Logs</h2>
+          <p style="color:var(--text-muted); font-size:0.95rem;">Track played games, completion dates, duration, player count, and winners.</p>
+        </div>
+        <button id="btnClearSessions" style="background:transparent; border:1px solid rgba(239, 68, 68, 0.4); color:#ef4444; padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-weight:700; font-size:0.85rem;">
+          🗑️ Clear History
+        </button>
+      </div>
+
+      <!-- Sessions List Table/Cards -->
+      <div id="sessionsContainer">
+        <!-- Dynamically rendered game sessions -->
       </div>
     </div>
   </main>
@@ -367,6 +403,8 @@
     // Tab Switcher
     const tabs = [
       { btn: 'tabStudioBtn', view: 'tabStudioView' },
+      { btn: 'tabEventsBtn', view: 'tabEventsView' },
+      { btn: 'tabHistoryBtn', view: 'tabHistoryView' },
       { btn: 'tabBrandBtn', view: 'tabBrandView' },
       { btn: 'tabJsonBtn', view: 'tabJsonView' }
     ];
@@ -383,8 +421,162 @@
         if (t.view === 'tabJsonView') {
           syncCurrentEditorToMemory();
           document.getElementById('questionsJson').value = JSON.stringify(questions, null, 2);
+        } else if (t.view === 'tabEventsView') {
+          loadEventsList();
+        } else if (t.view === 'tabHistoryView') {
+          loadSessionsList();
         }
       });
+    });
+
+    // --- MULTI-CLIENT EVENT LIBRARY FUNCTIONS ---
+    async function loadEventsList() {
+      const container = document.getElementById('eventsGrid');
+      container.innerHTML = '<div style="color:var(--text-muted); padding:2rem;">Loading client events...</div>';
+      try {
+        const res = await fetch('/api/events');
+        const events = await res.json();
+
+        if (events.length === 0) {
+          container.innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; padding:3rem; background:var(--bg-card); border-radius:16px; border:1px solid var(--border-glass);">
+              <div style="font-size:3rem; margin-bottom:1rem;">📂</div>
+              <h3 style="color:var(--gold-light); margin-bottom:0.5rem;">No Event Presets Saved Yet</h3>
+              <p style="color:var(--text-muted); margin-bottom:1.5rem;">Click "Save Active Game as New Event Preset" above to create your first client preset.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = events.map(ev => {
+          const isCurrentlyActive = (currentConfig.eventName === ev.name);
+          return `
+            <div style="background:var(--bg-card); border:1px solid ${isCurrentlyActive ? 'var(--gold)' : 'var(--border-glass)'}; border-radius:16px; padding:1.5rem; display:flex; flex-direction:column; justify-content:space-between; position:relative; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
+              ${isCurrentlyActive ? `<span style="position:absolute; top:12px; right:12px; background:rgba(34,197,94,0.2); border:1px solid #22c55e; color:#22c55e; font-size:0.75rem; font-weight:800; padding:0.25rem 0.6rem; border-radius:999px;">● CURRENTLY LIVE</span>` : ''}
+              <div>
+                <span style="font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); font-weight:800;">${escapeHtml(ev.client || 'CLIENT EVENT')}</span>
+                <h3 style="font-size:1.25rem; color:var(--text-main); margin:0.3rem 0 0.8rem; font-family:var(--font-serif);">${escapeHtml(ev.name)}</h3>
+                <div style="display:flex; gap:1rem; font-size:0.85rem; color:var(--text-muted); margin-bottom:1.2rem;">
+                  <span>📝 ${ev.questionCount} Questions</span>
+                  <span>📅 ${ev.date || 'No date'}</span>
+                </div>
+              </div>
+              <div style="display:flex; gap:0.6rem; align-items:center; border-top:1px solid var(--border-glass); padding-top:1rem;">
+                <button onclick="activateEventPreset('${ev.id}')" class="btn-primary" style="flex:1; padding:0.6rem 0.8rem; font-size:0.85rem; border-radius:8px; ${isCurrentlyActive ? 'opacity:0.6;' : ''}">
+                  ${isCurrentlyActive ? '✓ Active Live' : '🚀 Make Active (Live)'}
+                </button>
+                <button onclick="deleteEventPreset('${ev.id}', '${escapeHtml(ev.name)}')" style="background:transparent; border:1px solid rgba(239,68,68,0.4); color:#ef4444; padding:0.6rem 0.8rem; border-radius:8px; cursor:pointer; font-size:0.85rem;" title="Delete preset">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = '<div style="color:#ef4444;">Failed to load events library.</div>';
+      }
+    }
+
+    // Save active as new preset
+    document.getElementById('btnSaveCurrentAsPreset').addEventListener('click', async () => {
+      const name = prompt('Enter Event Name (e.g. "B & S Wedding Trivia" or "Dave Birthday"):', currentConfig.eventName || '');
+      if (!name) return;
+      const client = prompt('Enter Client Name / Category (e.g. "Benjamin & Sarah" or "Acme Corp"):', '') || '';
+
+      try {
+        const res = await fetch('/api/events/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            client,
+            date: new Date().toISOString().split('T')[0]
+          })
+        });
+        if (res.ok) {
+          alert(`✓ Saved preset "${name}" into your Client Events Library!`);
+          loadEventsList();
+        }
+      } catch (e) {
+        alert('Failed to save preset.');
+      }
+    });
+
+    async function activateEventPreset(id) {
+      if (!confirm('Switch the live game to this event preset? The big screen and player links will immediately update.')) return;
+      try {
+        const res = await fetch(`/api/events/activate/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ ' + data.message);
+          await loadData();
+          loadEventsList();
+        }
+      } catch (e) {
+        alert('Failed to activate event.');
+      }
+    }
+
+    async function deleteEventPreset(id, name) {
+      if (!confirm(`Delete preset "${name}" from your library?`)) return;
+      try {
+        const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
+        if (res.ok) loadEventsList();
+      } catch (e) { alert('Failed to delete preset.'); }
+    }
+
+    // --- GAME SESSION HISTORY FUNCTIONS ---
+    async function loadSessionsList() {
+      const container = document.getElementById('sessionsContainer');
+      container.innerHTML = '<div style="color:var(--text-muted); padding:2rem;">Loading game session logs...</div>';
+      try {
+        const res = await fetch('/api/sessions');
+        const sessions = await res.json();
+
+        if (sessions.length === 0) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:3rem; background:var(--bg-card); border-radius:16px; border:1px solid var(--border-glass);">
+              <div style="font-size:3rem; margin-bottom:1rem;">⏳</div>
+              <h3 style="color:var(--gold-light); margin-bottom:0.5rem;">No Completed Game Sessions Recorded Yet</h3>
+              <p style="color:var(--text-muted);">Whenever the host runs a game to the final Champions Podium, the play date, duration, player count, and winners are automatically saved here!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = sessions.map((s, idx) => {
+          const dateStr = new Date(s.playedAt).toLocaleString();
+          const winnersList = (s.winners || []).map(w => `${w.rank === 1 ? '🥇' : w.rank === 2 ? '🥈' : '🥉'} ${escapeHtml(w.nickname)} (${w.score.toLocaleString()} pts)`).join(' &nbsp;•&nbsp; ');
+
+          return `
+            <div style="background:var(--bg-card); border:1px solid var(--border-glass); border-radius:16px; padding:1.4rem; margin-bottom:1rem; box-shadow:0 8px 20px rgba(0,0,0,0.3);">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.8rem;">
+                <div>
+                  <h3 style="font-size:1.2rem; color:var(--gold-light); margin-bottom:0.2rem;">${escapeHtml(s.eventName || 'Trivia Game')}</h3>
+                  <div style="font-size:0.85rem; color:var(--text-muted);">
+                    🕒 Finished: <strong>${dateStr}</strong> &nbsp;|&nbsp; ⏱️ Duration: <strong>${s.duration || 'N/A'}</strong> &nbsp;|&nbsp; 👥 Players: <strong>${s.totalPlayers}</strong> &nbsp;|&nbsp; ❓ Questions: <strong>${s.totalQuestions}</strong>
+                  </div>
+                </div>
+                <span style="background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold-light); font-size:0.75rem; font-weight:800; padding:0.3rem 0.7rem; border-radius:999px;">PIN: ${escapeHtml(s.pin || 'WEDDING')}</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:0.8rem 1rem; font-size:0.9rem; color:var(--text-main); display:flex; align-items:center; gap:0.5rem;">
+                <span style="font-weight:700; color:var(--gold);">🏆 Podium Winners:</span>
+                <span>${winnersList || 'No scores registered'}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = '<div style="color:#ef4444;">Failed to load sessions.</div>';
+      }
+    }
+
+    document.getElementById('btnClearSessions').addEventListener('click', async () => {
+      if (!confirm('Clear all game session logs?')) return;
+      try {
+        await fetch('/api/sessions', { method: 'DELETE' });
+        loadSessionsList();
+      } catch (e) { alert('Failed to clear sessions.'); }
     });
 
     // Save Branding

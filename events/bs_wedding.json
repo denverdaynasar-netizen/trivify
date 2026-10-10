@@ -1,0 +1,344 @@
+{
+  "id": "bs_wedding",
+  "name": "B & S Wedding Trivia",
+  "client": "Benjamin & Sarah",
+  "date": "2026-10-10",
+  "theme": "theme-sky-blue",
+  "config": {
+    "eventName": "B & S Wedding Trivia",
+    "subtitle": "How well do you know the newlyweds?",
+    "logoUrl": "/assets/logo.jpg",
+    "theme": "wedding-gold",
+    "primaryColor": "#d4af37",
+    "accentColor": "#f3e5ab",
+    "isGameActive": true
+  },
+  "questions": [
+    {
+      "id": 1,
+      "question": "Where was the first place the couple traveled together?",
+      "timeLimit": 20,
+      "options": [
+        "Paete",
+        "Tagaytay",
+        "Cebu",
+        "Dubai"
+      ],
+      "correctIndex": 0,
+      "explanation": "Their very first roadtrip adventure was to Paete!"
+    },
+    {
+      "id": 2,
+      "question": "What is the couple's favorite fast-food chain?",
+      "timeLimit": 20,
+      "options": [
+        "McDonald's",
+        "Jollibee",
+        "KFC",
+        "Wendy's"
+      ],
+      "correctIndex": 1,
+      "explanation": "Jollibee is their favorite, and where they had their first date!"
+    },
+    {
+      "id": 3,
+      "question": "What is the couple's dream adventure?",
+      "timeLimit": 20,
+      "options": [
+        "Paragliding",
+        "Bungee Jumping",
+        "Skydiving",
+        "Hike Mt. Apo"
+      ],
+      "correctIndex": 2,
+      "explanation": "Skydiving is their ultimate dream adventure!"
+    },
+    {
+      "id": 4,
+      "question": "Who sent the first message?",
+      "timeLimit": 15,
+      "options": [
+        "Bride",
+        "Both at the same time",
+        "A friend initiated",
+        "Groom"
+      ],
+      "correctIndex": 3,
+      "explanation": "The Groom made the first bold move and sent the message!"
+    },
+    {
+      "id": 5,
+      "question": "What is the couple's dream travel destination?",
+      "timeLimit": 20,
+      "options": [
+        "Japan",
+        "China",
+        "Switzerland",
+        "India"
+      ],
+      "correctIndex": 0,
+      "explanation": "Japan is their top dream travel destination!"
+    },
+    {
+      "id": 6,
+      "question": "Where did the couple first meet?",
+      "timeLimit": 20,
+      "options": [
+        "Work",
+        "School",
+        "Cafe",
+        "Online"
+      ],
+      "correctIndex": 1,
+      "explanation": "They first met back in School!"
+    },
+    {
+      "id": 7,
+      "question": "How long did the Groom court the Bride?",
+      "timeLimit": 20,
+      "options": [
+        "8 months",
+        "5 months",
+        "1 year",
+        "3 months"
+      ],
+      "correctIndex": 2,
+      "explanation": "He courted her patiently for 1 whole year!"
+    },
+    {
+      "id": 8,
+      "question": "What is their favorite activity together?",
+      "timeLimit": 20,
+      "options": [
+        "Hiking",
+        "Gaming",
+        "Sleeping",
+        "Traveling"
+      ],
+      "correctIndex": 3,
+      "explanation": "Traveling together is their absolute favorite activity!"
+    },
+    {
+      "id": 9,
+      "question": "What month did the proposal happen?",
+      "timeLimit": 20,
+      "options": [
+        "February",
+        "July",
+        "May",
+        "December"
+      ],
+      "correctIndex": 1,
+      "explanation": "The unforgettable proposal happened in July!"
+    },
+    {
+      "id": 10,
+      "question": "How many countries have they traveled to together?",
+      "timeLimit": 20,
+      "options": [
+        "5",
+        "4",
+        "6",
+        "7"
+      ],
+      "correctIndex": 2,
+      "explanation": "They have explored 6 countries together!"
+    },
+    {
+      "id": 11,
+      "question": "What is the chemical symbol for gold?",
+      "timeLimit": 15,
+      "options": [
+        "Go",
+        "Gd",
+        "Ag",
+        "Au"
+      ],
+      "correctIndex": 3,
+      "explanation": "Au (from Latin Aurum) is the symbol for gold!"
+    },
+    {
+      "id": 12,
+      "question": "Which gas do plants absorb from the atmosphere?",
+      "timeLimit": 15,
+      "options": [
+        "Carbon Dioxide",
+        "Oxygen",
+        "Nitrogen",
+        "Hydrogen"
+      ],
+      "correctIndex": 0,
+      "explanation": "Plants absorb Carbon Dioxide (CO2) during photosynthesis!"
+    },
+    {
+      "id": 13,
+      "question": "In machine design, the relation for stress is:",
+      "timeLimit": 20,
+      "options": [
+        "σ = m / v",
+        "σ = F / A",
+        "σ = Q / mc",
+        "σ = E / R"
+      ],
+      "correctIndex": 1,
+      "explanation": "Stress (σ) equals Force (F) divided by Area (A)!"
+    },
+    {
+      "id": 14,
+      "question": "Who was known as the “Brains of the Katipunan”?",
+      "timeLimit": 20,
+      "options": [
+        "Andrés Bonifacio",
+        "Apolinario Mabini",
+        "Emilio Jacinto",
+        "Gregorio del Pilar"
+      ],
+      "correctIndex": 2,
+      "explanation": "Emilio Jacinto was celebrated as the Utak ng Katipunan!"
+    },
+    {
+      "id": 15,
+      "question": "What is the value of π (pi) rounded to 4 decimal places?",
+      "timeLimit": 15,
+      "options": [
+        "3.1415",
+        "3.1426",
+        "3.4116",
+        "3.1416"
+      ],
+      "correctIndex": 3,
+      "explanation": "3.14159... rounded to 4 decimal places is 3.1416!"
+    },
+    {
+      "id": 16,
+      "question": "How many bones does an adult human body have?",
+      "timeLimit": 15,
+      "options": [
+        "206",
+        "201",
+        "212",
+        "196"
+      ],
+      "correctIndex": 0,
+      "explanation": "An adult human skeleton has 206 bones!"
+    },
+    {
+      "id": 17,
+      "question": "Where was the couple's first local flight?",
+      "timeLimit": 20,
+      "options": [
+        "Palawan",
+        "Cebu",
+        "Zamboanga",
+        "Bohol"
+      ],
+      "correctIndex": 1,
+      "explanation": "Their first local flight together was to Cebu!"
+    },
+    {
+      "id": 18,
+      "question": "What year did the couple meet each other?",
+      "timeLimit": 20,
+      "options": [
+        "2016",
+        "2014",
+        "2015",
+        "2017"
+      ],
+      "correctIndex": 2,
+      "explanation": "The couple first met each other in 2015!"
+    },
+    {
+      "id": 19,
+      "question": "Water boils at what temperature at sea level?",
+      "timeLimit": 15,
+      "options": [
+        "90°C",
+        "95°C",
+        "110°C",
+        "100°C"
+      ],
+      "correctIndex": 3,
+      "explanation": "Water boils at 100°C at normal atmospheric pressure!"
+    },
+    {
+      "id": 20,
+      "question": "What is the Ideal Gas Equation?",
+      "timeLimit": 20,
+      "options": [
+        "PV = mRT",
+        "F = ma",
+        "P = ρgh",
+        "Q = mcΔT"
+      ],
+      "correctIndex": 0,
+      "explanation": "PV = mRT is the fundamental Ideal Gas Law!"
+    },
+    {
+      "id": 21,
+      "question": "What snack is a favorite of the couple?",
+      "timeLimit": 20,
+      "options": [
+        "DQ Ice cream",
+        "Bibingka ni Lola sa Stacruz",
+        "Siomai LB",
+        "Yumburger"
+      ],
+      "correctIndex": 1,
+      "explanation": "Bibingka ni Lola sa Sta. Cruz is their favorite comfort snack!"
+    },
+    {
+      "id": 22,
+      "question": "What is the slope of the line y = 2x + 5?",
+      "timeLimit": 15,
+      "options": [
+        "5",
+        "-2",
+        "2",
+        "0"
+      ],
+      "correctIndex": 2,
+      "explanation": "In slope-intercept form (y = mx + b), the slope m is 2!"
+    },
+    {
+      "id": 23,
+      "question": "What force keeps planets in orbit around the sun?",
+      "timeLimit": 15,
+      "options": [
+        "Magnetism",
+        "Nuclear force",
+        "Friction",
+        "Gravity"
+      ],
+      "correctIndex": 3,
+      "explanation": "Gravitational attraction keeps celestial bodies in orbital paths!"
+    },
+    {
+      "id": 24,
+      "question": "Which sentence is grammatically correct?",
+      "timeLimit": 15,
+      "options": [
+        "He doesn’t like pizza.",
+        "He don’t like pizza.",
+        "He not like pizza.",
+        "He didn’t likes pizza."
+      ],
+      "correctIndex": 0,
+      "explanation": "'He doesn’t like pizza' uses the proper third-person singular auxiliary verb!"
+    },
+    {
+      "id": 25,
+      "question": "Who’s more likely to win in a trivia game?",
+      "timeLimit": 15,
+      "options": [
+        "Groom",
+        "Bride",
+        "Both tie",
+        "Depends on the topic"
+      ],
+      "correctIndex": 1,
+      "explanation": "The Bride takes the crown in trivia showdowns!"
+    }
+  ],
+  "updatedAt": "2026-10-10T22:00:00Z"
+}

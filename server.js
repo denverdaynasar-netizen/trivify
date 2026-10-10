@@ -12,6 +12,13 @@ const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const QUESTIONS_PATH = path.join(__dirname, 'questions.json');
+const EVENTS_DIR = path.join(__dirname, 'events');
+const SESSIONS_PATH = path.join(__dirname, 'game_sessions.json');
+
+// Ensure events directory exists
+if (!fs.existsSync(EVENTS_DIR)) {
+  fs.mkdirSync(EVENTS_DIR, { recursive: true });
+}
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,6 +46,29 @@ function loadQuestions() {
   }
 }
 
+function loadSessions() {
+  try {
+    if (fs.existsSync(SESSIONS_PATH)) {
+      return JSON.parse(fs.readFileSync(SESSIONS_PATH, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Error loading sessions:', err);
+  }
+  return [];
+}
+
+function recordGameSession(sessionData) {
+  try {
+    const list = loadSessions();
+    list.unshift(sessionData); // newest first
+    // keep last 50 games
+    const trimmed = list.slice(0, 50);
+    fs.writeFileSync(SESSIONS_PATH, JSON.stringify(trimmed, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error recording session:', err);
+  }
+}
+
 // REST Endpoints
 app.get('/api/config', (req, res) => res.json(loadConfig()));
 app.post('/api/config', (req, res) => {
@@ -51,6 +81,119 @@ app.post('/api/questions', (req, res) => {
   if (!Array.isArray(req.body)) return res.status(400).json({ error: "Questions must be an array" });
   fs.writeFileSync(QUESTIONS_PATH, JSON.stringify(req.body, null, 2), 'utf8');
   res.json({ success: true, count: req.body.length });
+});
+
+// --- MULTI-CLIENT EVENT LIBRARY API ---
+app.get('/api/events', (req, res) => {
+  try {
+    const files = fs.readdirSync(EVENTS_DIR).filter(f => f.endsWith('.json'));
+    const events = files.map(filename => {
+      try {
+        const content = JSON.parse(fs.readFileSync(path.join(EVENTS_DIR, filename), 'utf8'));
+        return {
+          id: filename.replace('.json', ''),
+          name: content.name || content.config?.eventName || 'Untitled Event',
+          client: content.client || '',
+          date: content.date || '',
+          theme: content.theme || content.config?.theme || 'theme-sky-blue',
+          questionCount: Array.isArray(content.questions) ? content.questions.length : 0,
+          updatedAt: content.updatedAt || ''
+        };
+      } catch (e) {
+        return null;
+      }
+    }).filter(Boolean);
+
+    res.json(events);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to list events' });
+  }
+});
+
+// Save an event preset into the library
+app.post('/api/events/save', (req, res) => {
+  try {
+    const { id, name, client, date, theme } = req.body;
+    const cleanId = (id || name || 'event').toLowerCase().replace(/[^a-z0-9_-]/g, '_').substring(0, 50);
+    const eventFile = path.join(EVENTS_DIR, `${cleanId}.json`);
+
+    const currentConfig = loadConfig();
+    const currentQuestions = loadQuestions();
+
+    const eventData = {
+      id: cleanId,
+      name: name || currentConfig.eventName || 'Untitled Event',
+      client: client || '',
+      date: date || new Date().toISOString().split('T')[0],
+      theme: theme || 'theme-sky-blue',
+      config: currentConfig,
+      questions: currentQuestions,
+      updatedAt: new Date().toISOString()
+    };
+
+    fs.writeFileSync(eventFile, JSON.stringify(eventData, null, 2), 'utf8');
+    res.json({ success: true, event: eventData });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save event preset' });
+  }
+});
+
+// Activate an event preset as the LIVE active game
+app.post('/api/events/activate/:id', (req, res) => {
+  try {
+    const eventFile = path.join(EVENTS_DIR, `${req.params.id}.json`);
+    if (!fs.existsSync(eventFile)) {
+      return res.status(404).json({ error: 'Event preset not found' });
+    }
+
+    const eventData = JSON.parse(fs.readFileSync(eventFile, 'utf8'));
+    if (eventData.config) {
+      fs.writeFileSync(CONFIG_PATH, JSON.stringify(eventData.config, null, 2), 'utf8');
+    }
+    if (eventData.questions && Array.isArray(eventData.questions)) {
+      fs.writeFileSync(QUESTIONS_PATH, JSON.stringify(eventData.questions, null, 2), 'utf8');
+    }
+
+    // Reset room state so fresh active event is ready
+    rooms.forEach(room => {
+      room.questions = loadQuestions();
+      room.currentQIndex = -1;
+      room.state = 'LOBBY';
+      room.players.clear();
+      room.broadcast({ type: 'ROOM_RESET', players: [] });
+    });
+
+    res.json({ success: true, message: `Activated "${eventData.name}" as live game!`, event: eventData });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to activate event' });
+  }
+});
+
+// Delete an event preset from library
+app.delete('/api/events/:id', (req, res) => {
+  try {
+    const eventFile = path.join(EVENTS_DIR, `${req.params.id}.json`);
+    if (fs.existsSync(eventFile)) {
+      fs.unlinkSync(eventFile);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete event' });
+  }
+});
+
+// --- GAME SESSIONS HISTORY API ---
+app.get('/api/sessions', (req, res) => {
+  res.json(loadSessions());
+});
+
+app.delete('/api/sessions', (req, res) => {
+  try {
+    fs.writeFileSync(SESSIONS_PATH, '[]', 'utf8');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to clear session history' });
+  }
 });
 
 const os = require('os');
@@ -159,6 +302,9 @@ class QuizRoom {
     }
 
     clearInterval(this.timer);
+    if (index === 0) {
+      this.gameStartTime = Date.now();
+    }
     this.currentQIndex = index;
     this.state = 'QUESTION';
     const q = this.questions[index];
@@ -316,19 +462,44 @@ class QuizRoom {
     this.state = 'PODIUM';
     clearInterval(this.timer);
 
-    const podium = Array.from(this.players.values())
+    const allPlayersSorted = Array.from(this.players.values())
       .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
       .map((p, idx) => ({
         rank: idx + 1,
         nickname: p.nickname,
         score: p.score
       }));
 
+    const podium = allPlayersSorted.slice(0, 3);
+
     this.broadcast({
       type: 'PODIUM',
       podium
     });
+
+    // Automatically record completed game session
+    try {
+      const cfg = loadConfig();
+      const endTime = Date.now();
+      const startTime = this.gameStartTime || (endTime - (this.questions.length * 25 * 1000));
+      const durationSeconds = Math.max(1, Math.round((endTime - startTime) / 1000));
+      const minutes = Math.floor(durationSeconds / 60);
+      const seconds = durationSeconds % 60;
+
+      recordGameSession({
+        id: `game_${Date.now()}`,
+        eventName: cfg.eventName || 'Trivia Game',
+        pin: this.pin,
+        playedAt: new Date().toISOString(),
+        duration: `${minutes}m ${seconds}s`,
+        totalPlayers: this.players.size,
+        totalQuestions: this.questions.length,
+        winners: podium,
+        fullLeaderboard: allPlayersSorted.slice(0, 10)
+      });
+    } catch (e) {
+      console.error('Error logging game session:', e);
+    }
   }
 }
 
